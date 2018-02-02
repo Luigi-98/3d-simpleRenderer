@@ -22,9 +22,15 @@ void setup()
 
 void draw()
 {
-  Triangle input[]=new Triangle[2];
-  input[0]=new Triangle(new PVector(0,0,-1), new PVector(1,0,-1), new PVector(1,1,-1));
-  input[1]=new Triangle(new PVector(0,0,-1), new PVector(0,1,-1), new PVector(1,1,-1));
+  Triangle input[]=new Triangle[4];
+  input[0]=new Triangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1));
+  input[1]=new Triangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1));
+  input[2]=new Triangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1));
+  input[3]=new Triangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1));
+  input[0].a=color(255,0,0);
+  input[1].a=color(0,0,255);
+  input[2].a=color(255,0,0);
+  input[3].a=color(0,0,255);
   render(input);
 }
 
@@ -126,6 +132,7 @@ int[] render(Triangle[] input)
               {
                 zbuffer[x][y].dist=dist;
                 zbuffer[x][y].id=i;
+                zbuffer[x][y].col=input[i].a;
               }
             }
       }
@@ -134,19 +141,10 @@ int[] render(Triangle[] input)
     {
       for (int y=0; y<h; y++)
       {
-        switch (zbuffer[x][y].id)
+        if (zbuffer[x][y].id!=-1)
         {
-          case (-1):
-            stroke(255,0,0);
-            break;
-          case (0):
-            stroke(0,255,0);
-        point(x,y);
-            break;
-          case (1):
-            stroke(0,0,255);
-        point(x,y);
-            break;
+          stroke(zbuffer[x][y].col);
+          point(x,y);
         }
       }
     }
