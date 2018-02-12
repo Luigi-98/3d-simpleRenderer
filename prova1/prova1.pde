@@ -1,7 +1,4 @@
-int w=640, h=480;
-double r=1,t=1,n=1,f=2;
-Matrix projection;
-Pixel zbuffer[][]=new Pixel[w][h];
+
 color background=color(255);
 
 void setup()
@@ -10,15 +7,6 @@ void setup()
   background(0);
   stroke(255,255,0);
   fill(255);
-  for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y]=new Pixel();
-  
-  projection = new Matrix(4,4);
-  projection.a[0][0]=n/r;
-  projection.a[1][1]=n/t;
-  projection.a[2][2]=-(f+n)/(f-n);
-  projection.a[2][3]=-2*f*n/(f-n);
-  projection.a[3][2]=-1;
-  projection.a[0][1]=projection.a[0][2]=projection.a[0][3]=projection.a[1][0]=projection.a[1][2]=projection.a[1][3]=projection.a[2][0]=projection.a[2][1]=projection.a[3][0]=projection.a[3][1]=projection.a[3][3]=0;
 }
 
 void draw()
@@ -64,6 +52,22 @@ class Math
       return result;
     }
   }
+  
+  PVector min(PVector A, PVector B, PVector C)
+  {
+    PVector res=new PVector(A.x<B.x?A.x:B.x,A.y<B.y?A.y:B.y);
+    res.x=res.x<C.x?res.x:C.x;
+    res.y=res.y<C.y?res.y:C.y;
+    return res;
+  }
+  
+  PVector max(PVector A, PVector B, PVector C)
+  {
+    PVector res=new PVector(A.x>B.x?A.x:B.x,A.y>B.y?A.y:B.y);
+    res.x=res.x>C.x?res.x:C.x;
+    res.y=res.y>C.y?res.y:C.y;
+    return res;
+  }
 }
 
 class Scene
@@ -72,6 +76,7 @@ class Scene
   {
     int vertN=0, triangN=0;
     PVector[] vertexes;
+    PVector[] projected;
     Triangle[] triangles;
     
     class Triangle
@@ -102,76 +107,86 @@ class Scene
     }
   }
   
-  PVector project(PVector P)
+  class Renderer
   {
-    PVector result=projection.applyTo(P);
-    result.x*=w/2;
-    result.y*=-h/2;
-    return result.add(w/2,h/2);
-  }
-  
-  PVector min(PVector A, PVector B, PVector C)
-  {
-    PVector res=new PVector(A.x<B.x?A.x:B.x,A.y<B.y?A.y:B.y);
-    res.x=res.x<C.x?res.x:C.x;
-    res.y=res.y<C.y?res.y:C.y;
-    return res;
-  }
-  
-  PVector max(PVector A, PVector B, PVector C)
-  {
-    PVector res=new PVector(A.x>B.x?A.x:B.x,A.y>B.y?A.y:B.y);
-    res.x=res.x>C.x?res.x:C.x;
-    res.y=res.y>C.y?res.y:C.y;
-    return res;
-  }
-  
-  Pixel[][] compareBuff(Pixel[][] zbuff, PVector a, PVector b, PVector c, color col, int id)
-  {
-    double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
-    double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
-    double kCA=(b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y);
-    double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
-    double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
-    double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
-    double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
-    PVector P0=min(a,b,c);
-    PVector P1=max(a,b,c);
-    for (int x=(int)(P0.x>0?P0.x:0); x<(int)(P1.x<w?P1.x:w); x++)
+    int w=640, h=480;
+    double r=1,t=1,n=1,f=2;
+    Matrix projection;
+    Pixel zbuffer[][]=new Pixel[w][h];
+    
+    Renderer(int width, int height)
     {
-      for (int y=(int)(P0.y>0?P0.y:0); y<(int)(P1.y<h?P1.y:h); y++)
+      w=width;
+      h=height;
+      
+      for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y]=new Pixel();
+
+      projection = new Matrix(4,4);
+      projection.a[0][0]=n/r;
+      projection.a[1][1]=n/t;
+      projection.a[2][2]=-(f+n)/(f-n);
+      projection.a[2][3]=-2*f*n/(f-n);
+      projection.a[3][2]=-1;
+      projection.a[0][1]=projection.a[0][2]=projection.a[0][3]=projection.a[1][0]=projection.a[1][2]=projection.a[1][3]=projection.a[2][0]=projection.a[2][1]=projection.a[3][0]=projection.a[3][1]=projection.a[3][3]=0;
+    }
+    
+    void project()
+    {
+      for (int i=0; i<vertN; i++)
       {
-        if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
-          &&
-           (kBC*((y-c.y)*(b.x-c.x)-(x-c.x)*(b.y-c.y))>=0)
-          &&
-           (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
-        {
-          // (x,y) is in triangle
-          double dist=Da*x+Db*y+Dc;
-          if (dist<zbuffer[x][y].dist)
-           {
-             zbuffer[x][y].dist=dist;
-             zbuffer[x][y].id=id;
-             zbuffer[x][y].col=col;
-           }
-        }
+        projected[i]=projection.applyTo(vertexes[i]);
+        projected[i].x*=w/2;
+        projected[i].y*=-h/2;
+        projected[i].add(w/2,h/2);
       }
     }
-    return zbuffer;
-  }
-  
-  int[] render(Triangle[] input)
-  {
-    for (int i=0; i<input.length; i++)
+    
+    void compareBuff(int id)
     {
-      PVector a,b,c;
-      a=input[i].A1=project(input[i].A);
-      b=input[i].B1=project(input[i].B);
-      c=input[i].C1=project(input[i].C);
+      PVector a=projected[triangles[id].Aid], b=projected[triangles[id].Bid], c=projected[triangles[id].Cid];
+      color col=triangles[id].col;
       
-      zbuffer=compareBuff(zbuffer,a,b,c,input[i].a,i);
+      double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
+      double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
+      double kCA=(b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y);
+      double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
+      double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
+      double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
+      double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
+      PVector P0=min(a,b,c), P1=max(a,b,c);
+      for (int x=(int)(P0.x>0?P0.x:0); x<(int)(P1.x<w?P1.x:w); x++)
+      {
+        for (int y=(int)(P0.y>0?P0.y:0); y<(int)(P1.y<h?P1.y:h); y++)
+        {
+          if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
+            &&
+             (kBC*((y-c.y)*(b.x-c.x)-(x-c.x)*(b.y-c.y))>=0)
+            &&
+             (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
+          {
+            // (x,y) is in triangle
+            double dist=Da*x+Db*y+Dc;
+            if (dist<zbuffer[x][y].dist)
+             {
+               zbuffer[x][y].dist=dist;
+               zbuffer[x][y].id=id;
+               zbuffer[x][y].col=col;
+             }
+          }
+        }
+      }
+      return zbuffer;
+    }
+    
+    int[] render()
+    {
+      project();
       
+      for (int i=0; i<input.length; i++)
+      {
+        compareBuff(i);
+      }
+        
       for (int x=0; x<w; x++)
       {
         for (int y=0; y<h; y++)
@@ -189,14 +204,14 @@ class Scene
         }
       }
       //triangle(input[i].A1.x, input[i].A1.y, input[i].B1.x, input[i].B1.y, input[i].C1.x, input[i].C1.y);
+      return new int[120];
     }
-    return new int[120];
-  }
-  
-  class Pixel
-  {
-    int id=-1;
-    double dist=Double.POSITIVE_INFINITY;
-    color col=255;
+    
+    class Pixel
+    {
+      int id=-1;
+      double dist=Double.POSITIVE_INFINITY;
+      color col=255;
+    }
   }
 }
