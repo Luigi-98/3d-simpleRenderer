@@ -1,4 +1,3 @@
-
 color background=color(255);
 
 void setup()
@@ -11,15 +10,12 @@ void setup()
 
 void draw()
 {
-  Triangle input[]=new Triangle[4];
-  input[0]=new Triangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1));
-  input[1]=new Triangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1));
-  input[2]=new Triangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1));
-  input[3]=new Triangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1));
-  input[0].a=color(255,0,0);
-  input[1].a=color(0,0,255);
-  input[2].a=color(255,0,0);
-  input[3].a=color(0,0,255);
+  Scene scene=new Scene();
+  Scene.Object cosa = new Scene.Object();
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
   render(input);
 }
 
@@ -84,7 +80,7 @@ class Scene
       int Aid=-1,Bid=-1,Cid=-1;
       color a,b,c;
       
-      Triangle(PVector A0, PVector B0, PVector C0)
+      Triangle(PVector A0, PVector B0, PVector C0, color c=color(255,255,255))
       {
         for (int i=0; i<vertN; i++)
         {
@@ -95,9 +91,17 @@ class Scene
         if (Aid==-1) Aid=newVert(A0);
         if (Bid==-1) Bid=newVert(B0);
         if (Cid==-1) Cid=newVert(C0);
+        
+        a=c;
       }
       
       Triangle(int A,B,C) {Aid=A; Bid=B; Cid=C;}
+    }
+    
+    int newTriangle(PVector A, PVector B, PVector C, color a)
+    {
+      triangles[triangN]=new Triangle(A,B,C,a);
+      return triangN++;
     }
     
     int newVert(PVector P)
@@ -107,17 +111,28 @@ class Scene
     }
   }
   
+  int nObjects=0;
+  Object[] objects;
+  
+  int addObject(Object obj)
+  {
+    objects[nObjects]=obj;
+    return nObjects++;
+  }
+  
   class Renderer
   {
     int w=640, h=480;
     double r=1,t=1,n=1,f=2;
     Matrix projection;
-    Pixel zbuffer[][]=new Pixel[w][h];
+    Pixel zbuffer[][];
     
     Renderer(int width, int height)
     {
       w=width;
       h=height;
+      
+      zbuffer[][]=new Pixel[w][h];
       
       for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y]=new Pixel();
 
