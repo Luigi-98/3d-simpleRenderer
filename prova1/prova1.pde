@@ -10,15 +10,16 @@ void setup()
 
 void draw()
 {
-  Scene scene=new Scene();
-  Scene.Object cosa = scene.new Object();
+  Scene scene=new Scene(1);
+  Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
   scene.addObject(cosa);
   
-  scene.renderer=scene.new Renderer(640,480);
+  scene.renderer=new Renderer(640,480);
+  scene.renderer.setScene(scene);
   scene.renderer.render();
 }
 
@@ -78,6 +79,13 @@ class Scene
     PVector[] projected;
     Triangle[] triangles;
     
+    Object(int triangleN)
+    {
+      vertexes=new PVector[triangleN*3];
+      projected=new PVector[triangleN*3];
+      triangles=new Triangle[triangleN];
+    }
+    
     class Triangle
     {
       int Aid=-1,Bid=-1,Cid=-1;
@@ -117,6 +125,11 @@ class Scene
   int nObjects=0;
   Object[] objects;
   Renderer renderer;
+  
+  Scene(int objectsN)
+  {
+    objects=new Object[objectsN];
+  }
   
   int addObject(Object obj)
   {
@@ -172,6 +185,7 @@ class Renderer
   
   void compareBuff(int objId, int tngId)
   {
+    // secondo me c'è qualcosa di strano nell'indicizzazione dei vertici, controlla!
     PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
     color col=scene.objects[objId].triangles[tngId].a;
     
@@ -198,22 +212,22 @@ class Renderer
           if (dist<zbuffer[x][y].dist)
            {
              zbuffer[x][y].dist=dist;
-             zbuffer[x][y].id=id;
+             zbuffer[x][y].id=tngId;
              zbuffer[x][y].col=col;
            }
         }
       }
     }
-    return zbuffer;
+    return;
   }
   
   int[] render()
   {
     project();
     
-    for (int i=0; i<input.length; i++)
+    for (int j=0; j<scene.nObjects; j++)
     {
-      compareBuff(i);
+      for (int i=0; i<scene.objects[j].vertN; i++) compareBuff(j,i);
     }
       
     for (int x=0; x<w; x++)
@@ -236,7 +250,7 @@ class Renderer
     return new int[120];
   }
   
-  static class Pixel
+  class Pixel
   {
     int id=-1;
     double dist=Double.POSITIVE_INFINITY;
