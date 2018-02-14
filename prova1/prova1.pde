@@ -95,13 +95,15 @@ class Scene
       {
         for (int i=0; i<vertN; i++)
         {
-          if (A0==vertexes[i]) Aid=i;
+          if (A0==vertexes[i]) Aid=i; // Queste condizioni non funzionano, controlla che si faccia così
           if (B0==vertexes[i]) Bid=i;
           if (C0==vertexes[i]) Cid=i;
         }
         if (Aid==-1) Aid=newVert(A0);
         if (Bid==-1) Bid=newVert(B0);
         if (Cid==-1) Cid=newVert(C0);
+        
+        println(Aid,Bid,Cid);
         
         a=c;
       }
@@ -185,7 +187,6 @@ class Renderer
   
   void compareBuff(int objId, int tngId)
   {
-    // secondo me c'è qualcosa di strano nell'indicizzazione dei vertici, controlla!
     PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
     color col=scene.objects[objId].triangles[tngId].a;
     
@@ -227,7 +228,7 @@ class Renderer
     
     for (int j=0; j<scene.nObjects; j++)
     {
-      for (int i=0; i<scene.objects[j].vertN; i++) compareBuff(j,i);
+      for (int i=0; i<scene.objects[j].triangN; i++) compareBuff(j,i);
     }
       
     for (int x=0; x<w; x++)
