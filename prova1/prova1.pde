@@ -99,6 +99,7 @@ class Scene
     {
       int Aid=-1,Bid=-1,Cid=-1;
       color a,b,c;
+      PVector nA, nB, nC;
       
       Triangle(PVector A0, PVector B0, PVector C0, color c)
       {
@@ -115,6 +116,8 @@ class Scene
         if (Cid==-1) Cid=newVert(C0);
         
         a=c;
+        
+        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0));
       }
       
       Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;}
@@ -237,6 +240,13 @@ class Renderer
     return;
   }
   
+  color shader(int x, int y)
+  {
+    color col0=zbuffer[x][y].col;
+    PVector n=; // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
+    return col0;
+  }
+  
   int[] render()
   {
     project();
@@ -251,7 +261,7 @@ class Renderer
       {
         if (zbuffer[x][y].id!=-1)
         {
-          pixels[y*w+x]=zbuffer[x][y].col;
+          pixels[y*w+x]=shader(x,y);
         }
         else
         {
