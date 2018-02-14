@@ -261,7 +261,6 @@ class Renderer
     }
     updatePixels();
     println(millis()-time);
-    //triangle(input[i].A1.x, input[i].A1.y, input[i].B1.x, input[i].B1.y, input[i].C1.x, input[i].C1.y);
     return new int[120];
   }
   
