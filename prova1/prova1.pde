@@ -194,37 +194,43 @@ class Renderer
     }
   }
   
-  void compareBuff(int objId, int tngId)
+  void compareBuff()
   {
-    PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
-    color col=scene.objects[objId].triangles[tngId].a;
-    
-    double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
-    double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
-    double kCA=(b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y);
-    double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
-    double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
-    double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
-    double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
-    PVector P0=Math.min(a,b,c), P1=Math.max(a,b,c);
-    for (int x=(int)(P0.x>0?P0.x:0); x<(int)(P1.x<w?P1.x:w); x++)
+    for (int objId=0; objId<scene.nObjects; objId++)
     {
-      for (int y=(int)(P0.y>0?P0.y:0); y<(int)(P1.y<h?P1.y:h); y++)
+      for (int tngId=0; tngId<scene.objects[objId].triangN; tngId++)
       {
-        if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
-          &&
-           (kBC*((y-c.y)*(b.x-c.x)-(x-c.x)*(b.y-c.y))>=0)
-          &&
-           (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
+        PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
+        color col=scene.objects[objId].triangles[tngId].a;
+        
+        double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
+        double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
+        double kCA=(b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y);
+        double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
+        double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
+        double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
+        double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
+        PVector P0=Math.min(a,b,c), P1=Math.max(a,b,c);
+        for (int x=(int)(P0.x>0?P0.x:0); x<(int)(P1.x<w?P1.x:w); x++)
         {
-          // (x,y) is in triangle
-          double dist=Da*x+Db*y+Dc;
-          if (dist<zbuffer[x][y].dist)
-           {
-             zbuffer[x][y].dist=dist;
-             zbuffer[x][y].id=tngId;
-             zbuffer[x][y].col=col;
-           }
+          for (int y=(int)(P0.y>0?P0.y:0); y<(int)(P1.y<h?P1.y:h); y++)
+          {
+            if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
+              &&
+               (kBC*((y-c.y)*(b.x-c.x)-(x-c.x)*(b.y-c.y))>=0)
+              &&
+               (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
+            {
+              // (x,y) is in triangle
+              double dist=Da*x+Db*y+Dc;
+              if (dist<zbuffer[x][y].dist)
+               {
+                 zbuffer[x][y].dist=dist;
+                 zbuffer[x][y].id=tngId;
+                 zbuffer[x][y].col=col;
+               }
+            }
+          }
         }
       }
     }
@@ -235,27 +241,26 @@ class Renderer
   {
     project();
     
-    for (int j=0; j<scene.nObjects; j++)
-    {
-      for (int i=0; i<scene.objects[j].triangN; i++) compareBuff(j,i);
-    }
-      
+    compareBuff();
+    
+    int time=millis();
+    loadPixels();
     for (int x=0; x<w; x++)
     {
       for (int y=0; y<h; y++)
       {
         if (zbuffer[x][y].id!=-1)
         {
-          stroke(zbuffer[x][y].col);
-          point(x,y);
+          pixels[y*w+x]=zbuffer[x][y].col;
         }
         else
         {
-          stroke(background);
-          point(x,y);
+          pixels[y*w+x]=background;
         }
       }
     }
+    updatePixels();
+    println(millis()-time);
     //triangle(input[i].A1.x, input[i].A1.y, input[i].B1.x, input[i].B1.y, input[i].C1.x, input[i].C1.y);
     return new int[120];
   }
