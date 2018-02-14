@@ -1,4 +1,6 @@
 color background=color(255);
+int time;
+Scene scene;
 
 void setup()
 {
@@ -6,21 +8,28 @@ void setup()
   background(0);
   stroke(255,255,0);
   fill(255);
-}
-
-void draw()
-{
-  Scene scene=new Scene(1);
+  
+  time=millis();
+  scene=new Scene(1);
   Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
   scene.addObject(cosa);
+  println("Scene setup took ",millis()-time," milliseconds.");
   
+  time=millis();
   scene.renderer=new Renderer(640,480);
   scene.renderer.setScene(scene);
+  println("Renderer setup took ",millis()-time," milliseconds.");
+}
+
+void draw()
+{
+  time=millis();
   scene.renderer.render();
+  println("Rendering took ",millis()-time," milliseconds.");
 }
 
 static class Math
@@ -93,17 +102,17 @@ class Scene
       
       Triangle(PVector A0, PVector B0, PVector C0, color c)
       {
+        int q=3;
         for (int i=0; i<vertN; i++)
         {
-          if (A0==vertexes[i]) Aid=i; // Queste condizioni non funzionano, controlla che si faccia così
-          if (B0==vertexes[i]) Bid=i;
-          if (C0==vertexes[i]) Cid=i;
+          if (A0.equals(vertexes[i])) Aid=i+0*(q--);
+          if (B0.equals(vertexes[i])) Bid=i+0*(q--);
+          if (C0.equals(vertexes[i])) Cid=i+0*(q--);
+          if (q==0) break;
         }
         if (Aid==-1) Aid=newVert(A0);
         if (Bid==-1) Bid=newVert(B0);
         if (Cid==-1) Cid=newVert(C0);
-        
-        println(Aid,Bid,Cid);
         
         a=c;
       }
