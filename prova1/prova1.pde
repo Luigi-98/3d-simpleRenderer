@@ -10,13 +10,18 @@ void setup()
   fill(255);
   
   time=millis();
-  scene=new Scene(1);
-  Scene.Object cosa = scene.new Object(4);
+  scene=new Scene(2,1);
+  /*Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
-  scene.addObject(cosa);
+  scene.addObject(cosa);*/
+  scene.addParallelepiped(new PVector(0.2,-0.7,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5));
+  
+  for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
+  
+  scene.addLight(scene.new Light(2,2,1,new PVector(0.3,-0.5,-0.7),color(255,255,255)));
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();
@@ -100,6 +105,7 @@ class Scene
       int Aid=-1,Bid=-1,Cid=-1;
       color a,b,c;
       PVector nA, nB, nC;
+      PVector barycAlpha, barycBeta;
       
       Triangle(PVector A0, PVector B0, PVector C0, color c)
       {
@@ -117,10 +123,21 @@ class Scene
         
         a=c;
         
-        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0));
+        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
       }
       
       Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;}
+      
+      void initializeBarycentric()
+      {
+        PVector A=projected[Aid], B=projected[Bid], C=projected[Cid];
+        float den=1/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y));
+        barycAlpha=new PVector((B.y*C.z-B.z*C.y),(B.z*C.x-B.x*C.z),(B.x*C.y-B.y*C.x));
+        barycAlpha.mult(den);
+        barycBeta=new PVector((-A.y*C.z+A.z*C.y),(-A.z*C.x+A.x*C.z),(-A.x*C.y+A.y*C.x));
+        barycBeta.mult(den);
+        return;
+      }
     }
     
     int newTriangle(PVector A, PVector B, PVector C, color a)
@@ -136,19 +153,58 @@ class Scene
     }
   }
   
-  int nObjects=0;
+  class Light
+  {
+    float x,y,z;
+    color col;
+    PVector direction;
+    
+    Light(float x, float y, float z, PVector direction, color col)
+    {
+      this.x=x; this.y=y; this.z=z; this.direction=direction.normalize(); this.col=col;
+    }
+  }
+  
+  int nObjects=0, nLights=0;
   Object[] objects;
+  Light[] lights; 
   Renderer renderer;
   
-  Scene(int objectsN)
+  Scene(int objectsN, int lightsN)
   {
     objects=new Object[objectsN];
+    lights=new Light[lightsN];
   }
   
   int addObject(Object obj)
   {
     objects[nObjects]=obj;
     return nObjects++;
+  }
+  
+  int addLight(Light light)
+  {
+    lights[nLights]=light;
+    return nLights++;
+  }
+  
+  int addParallelepiped(PVector A, PVector l1, PVector l2, PVector l3)
+  {
+    Object obj=new Object(12);
+    PVector B=PVector.add(A,l1).add(l2).add(l3);
+    obj.newTriangle(A, PVector.add(A,l1), PVector.add(A,l2), color(255,0,0));
+    obj.newTriangle(PVector.add(A,l1).add(l2), PVector.add(A,l2), PVector.add(A,l1), color(255,0,0));
+    obj.newTriangle(A, PVector.add(A,l2), PVector.add(A,l3), color(255,0,0));
+    obj.newTriangle(PVector.add(A,l2).add(l3), PVector.add(A,l3), PVector.add(A,l2), color(255,0,0));
+    obj.newTriangle(A, PVector.add(A,l3), PVector.add(A,l1), color(255,0,0));
+    obj.newTriangle(PVector.add(A,l3).add(l1), PVector.add(A,l1), PVector.add(A,l3), color(255,0,0));
+    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l2), color(255,0,0));
+    obj.newTriangle(PVector.sub(B,l1).sub(l2), PVector.sub(B,l2), PVector.sub(B,l1), color(255,0,0));
+    obj.newTriangle(B, PVector.sub(B,l3), PVector.sub(B,l2), color(255,0,0));
+    obj.newTriangle(PVector.sub(B,l2).sub(l3), PVector.sub(B,l2), PVector.sub(B,l3), color(255,0,0));
+    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l3), color(255,0,0));
+    obj.newTriangle(PVector.sub(B,l3).sub(l1), PVector.sub(B,l3), PVector.sub(B,l1), color(255,0,0));
+    return addObject(obj);
   }
 }
 
@@ -229,7 +285,8 @@ class Renderer
               if (dist<zbuffer[x][y].dist)
                {
                  zbuffer[x][y].dist=dist;
-                 zbuffer[x][y].id=tngId;
+                 zbuffer[x][y].tngId=tngId;
+                 zbuffer[x][y].objId=objId;
                  zbuffer[x][y].col=col;
                }
             }
@@ -242,8 +299,27 @@ class Renderer
   
   color shader(int x, int y)
   {
+    Scene.Object obj=scene.objects[zbuffer[x][y].objId];
+    Scene.Object.Triangle tng=obj.triangles[zbuffer[x][y].tngId];
     color col0=zbuffer[x][y].col;
-    PVector n=; // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
+    tng.initializeBarycentric();
+    /**
+      Bisogna interpolare considerando che nA, nB ed nC sono i valori della funzione
+        in (x,y,zbuffer[x][y].dist).
+        
+        x ed y vanno bene quelli.
+        
+       No, non esattamente: le coordinate proiettate non conservano proporzioni né aree, ma noi approssimiamo.
+    **/
+    
+    float   alpha=tng.barycAlpha.dot(new PVector((float)x,(float)y,(float)zbuffer[x][y].dist)),
+            beta=tng.barycBeta.dot(new PVector((float)x,(float)y,(float)zbuffer[x][y].dist));
+    PVector n=PVector.add(PVector.mult(tng.nA,alpha),PVector.mult(tng.nB,beta)).add(PVector.mult(tng.nC,1-alpha-beta)); // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
+    for (int i=0; i<scene.nLights; i++)
+    {
+      float phong=scene.lights[i].direction.dot(n);
+      col0=color(phong*red(col0),phong*green(col0),phong*blue(col0));
+    }
     return col0;
   }
   
@@ -259,7 +335,7 @@ class Renderer
     {
       for (int y=0; y<h; y++)
       {
-        if (zbuffer[x][y].id!=-1)
+        if (zbuffer[x][y].tngId!=-1)
         {
           pixels[y*w+x]=shader(x,y);
         }
@@ -276,7 +352,7 @@ class Renderer
   
   class Pixel
   {
-    int id=-1;
+    int tngId=-1,objId=-1;
     double dist=Double.POSITIVE_INFINITY;
     color col=255;
   }
