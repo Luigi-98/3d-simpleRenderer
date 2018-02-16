@@ -32,6 +32,7 @@ void setup()
 
 void draw()
 {
+  scene.objects[0].move(-0.1,0,0);
   time=millis();
   scene.renderer.render();
   println("Rendering took ",millis()-time," milliseconds.");
@@ -48,6 +49,13 @@ static class Math
       a=new double[y][x];
       w=x;
       h=y;
+    }
+    
+    void fill(double n)
+    {
+      for (int x=0; x<w; x++)
+        for (int y=0; y<h; y++)
+          a[x][y]=n;
     }
     
     PVector applyTo(PVector v)
@@ -150,6 +158,26 @@ class Scene
     {
       vertexes[vertN]=P;
       return vertN++;
+    }
+    
+    void move(float x, float y, float z)
+    {
+      Math.Matrix translation = new Math.Matrix(4,4);
+      translation.fill(0);
+      translation.a[0][0]=translation.a[1][1]=translation.a[2][2]=1;
+      translation.a[3][0]=x;
+      translation.a[3][1]=y;
+      translation.a[3][2]=z;
+      transform(translation);
+    }
+    
+    void transform(Math.Matrix m)
+    {
+      for (int i=0; i<vertN; i++)
+      {
+        vertexes[i]=m.applyTo(vertexes[i]);
+      }
+      return;
     }
   }
   
