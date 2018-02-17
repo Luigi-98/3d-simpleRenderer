@@ -1,23 +1,25 @@
 color background=color(255);
-int time;
+int time,time2;
 Scene scene;
+int w=1024, h=768;
+int nFrames=0;
 
 void setup()
 {
-  size(640,480);
+  size(1024,768);
   background(0);
   stroke(255,255,0);
   fill(255);
   
   time=millis();
   scene=new Scene(2,1);
-  /*Scene.Object cosa = scene.new Object(4);
+  Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
-  scene.addObject(cosa);*/
-  scene.addParallelepiped(new PVector(0.2,-0.7,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5));
+  scene.addObject(cosa);
+  scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
   
   for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
   
@@ -25,17 +27,20 @@ void setup()
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();
-  scene.renderer=new Renderer(640,480);
+  scene.renderer=new Renderer(w,h);
   scene.renderer.setScene(scene);
   println("Renderer setup took ",millis()-time," milliseconds.");
+  time2=millis();
 }
 
 void draw()
 {
-  scene.objects[0].move(-0.1,0,0);
+  nFrames++;
+  scene.objects[0].move(-0.01,0,0);
   time=millis();
   scene.renderer.render();
   println("Rendering took ",millis()-time," milliseconds.");
+  if (scene.objects[0].vertexes[0].x<=-1) println("TOTAL RENDERING TOOK: ", (millis()-time2)/nFrames, " per frame.");
 }
 
 static class Math
@@ -100,6 +105,7 @@ class Scene
     PVector[] vertexes;
     PVector[] projected;
     Triangle[] triangles;
+    color col;
     
     Object(int triangleN)
     {
@@ -111,11 +117,11 @@ class Scene
     class Triangle
     {
       int Aid=-1,Bid=-1,Cid=-1;
-      color a,b,c;
+      color a=-1,b=-1,c=-1;
       PVector nA, nB, nC;
       PVector barycAlpha, barycBeta;
       
-      Triangle(PVector A0, PVector B0, PVector C0, color c)
+      Triangle(PVector A0, PVector B0, PVector C0)
       {
         int q=3;
         for (int i=0; i<vertN; i++)
@@ -129,9 +135,28 @@ class Scene
         if (Bid==-1) Bid=newVert(B0);
         if (Cid==-1) Cid=newVert(C0);
         
-        a=c;
+        //a=c;
         
         nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
+      }
+      
+      Triangle(PVector A0, PVector B0, PVector C0, color col)
+      {
+        int q=3;
+        for (int i=0; i<vertN; i++)
+        {
+          if (A0.equals(vertexes[i])) Aid=i+0*(q--);
+          if (B0.equals(vertexes[i])) Bid=i+0*(q--);
+          if (C0.equals(vertexes[i])) Cid=i+0*(q--);
+          if (q==0) break;
+        }
+        if (Aid==-1) Aid=newVert(A0);
+        if (Bid==-1) Bid=newVert(B0);
+        if (Cid==-1) Cid=newVert(C0);
+        
+        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
+        
+        a=col;
       }
       
       Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;}
@@ -148,9 +173,15 @@ class Scene
       }
     }
     
-    int newTriangle(PVector A, PVector B, PVector C, color a)
+    int newTriangle(PVector A, PVector B, PVector C)
     {
-      triangles[triangN]=new Triangle(A,B,C,a);
+      triangles[triangN]=new Triangle(A,B,C);
+      return triangN++;
+    }
+    
+    int newTriangle(PVector A, PVector B, PVector C, color c)
+    {
+      triangles[triangN]=new Triangle(A,B,C,c);
       return triangN++;
     }
     
@@ -165,9 +196,10 @@ class Scene
       Math.Matrix translation = new Math.Matrix(4,4);
       translation.fill(0);
       translation.a[0][0]=translation.a[1][1]=translation.a[2][2]=1;
-      translation.a[3][0]=x;
-      translation.a[3][1]=y;
-      translation.a[3][2]=z;
+      translation.a[0][3]=x;
+      translation.a[1][3]=y;
+      translation.a[2][3]=z;
+      translation.a[3][3]=1;
       transform(translation);
     }
     
@@ -216,22 +248,23 @@ class Scene
     return nLights++;
   }
   
-  int addParallelepiped(PVector A, PVector l1, PVector l2, PVector l3)
+  int addParallelepiped(PVector A, PVector l1, PVector l2, PVector l3, color col)
   {
     Object obj=new Object(12);
     PVector B=PVector.add(A,l1).add(l2).add(l3);
-    obj.newTriangle(A, PVector.add(A,l1), PVector.add(A,l2), color(255,0,0));
-    obj.newTriangle(PVector.add(A,l1).add(l2), PVector.add(A,l2), PVector.add(A,l1), color(255,0,0));
-    obj.newTriangle(A, PVector.add(A,l2), PVector.add(A,l3), color(255,0,0));
-    obj.newTriangle(PVector.add(A,l2).add(l3), PVector.add(A,l3), PVector.add(A,l2), color(255,0,0));
-    obj.newTriangle(A, PVector.add(A,l3), PVector.add(A,l1), color(255,0,0));
-    obj.newTriangle(PVector.add(A,l3).add(l1), PVector.add(A,l1), PVector.add(A,l3), color(255,0,0));
-    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l2), color(255,0,0));
-    obj.newTriangle(PVector.sub(B,l1).sub(l2), PVector.sub(B,l2), PVector.sub(B,l1), color(255,0,0));
-    obj.newTriangle(B, PVector.sub(B,l3), PVector.sub(B,l2), color(255,0,0));
-    obj.newTriangle(PVector.sub(B,l2).sub(l3), PVector.sub(B,l2), PVector.sub(B,l3), color(255,0,0));
-    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l3), color(255,0,0));
-    obj.newTriangle(PVector.sub(B,l3).sub(l1), PVector.sub(B,l3), PVector.sub(B,l1), color(255,0,0));
+    obj.newTriangle(A, PVector.add(A,l1), PVector.add(A,l2));
+    obj.newTriangle(PVector.add(A,l1).add(l2), PVector.add(A,l2), PVector.add(A,l1));
+    obj.newTriangle(A, PVector.add(A,l2), PVector.add(A,l3));
+    obj.newTriangle(PVector.add(A,l2).add(l3), PVector.add(A,l3), PVector.add(A,l2));
+    obj.newTriangle(A, PVector.add(A,l3), PVector.add(A,l1));
+    obj.newTriangle(PVector.add(A,l3).add(l1), PVector.add(A,l1), PVector.add(A,l3));
+    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l2));
+    obj.newTriangle(PVector.sub(B,l1).sub(l2), PVector.sub(B,l2), PVector.sub(B,l1));
+    obj.newTriangle(B, PVector.sub(B,l3), PVector.sub(B,l2));
+    obj.newTriangle(PVector.sub(B,l2).sub(l3), PVector.sub(B,l2), PVector.sub(B,l3));
+    obj.newTriangle(B, PVector.sub(B,l1), PVector.sub(B,l3));
+    obj.newTriangle(PVector.sub(B,l3).sub(l1), PVector.sub(B,l3), PVector.sub(B,l1));
+    obj.col=col;
     return addObject(obj);
   }
 }
@@ -283,12 +316,16 @@ class Renderer
   
   void compareBuff()
   {
+    int timec=0;
+    for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y].reset();
+    
     for (int objId=0; objId<scene.nObjects; objId++)
     {
       for (int tngId=0; tngId<scene.objects[objId].triangN; tngId++)
       {
         PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
         color col=scene.objects[objId].triangles[tngId].a;
+        col=col==-1?scene.objects[objId].col:col;
         
         double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
         double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
@@ -298,9 +335,14 @@ class Renderer
         double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
         double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
         PVector P0=Math.min(a,b,c), P1=Math.max(a,b,c);
-        for (int x=(int)(P0.x>0?P0.x:0); x<(int)(P1.x<w?P1.x:w); x++)
+        timec=millis()-timec;
+        
+        //ma se trovassi un modo per ridurre al massimo i due for qui sotto?
+        // in pratica potresti basarti sul primo pixel che ha passato il test di appartenenza della precedente riga
+        
+        for (int x=(int)(P0.x>0?P0.x:0); x<=(int)(P1.x<w?P1.x:w); x++)
         {
-          for (int y=(int)(P0.y>0?P0.y:0); y<(int)(P1.y<h?P1.y:h); y++)
+          for (int y=(int)(P0.y>0?P0.y:0); y<=(int)(P1.y<h?P1.y:h); y++)
           {
             if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
               &&
@@ -309,10 +351,10 @@ class Renderer
                (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
             {
               // (x,y) is in triangle
-              double dist=Da*x+Db*y+Dc;
-              if (dist<zbuffer[x][y].dist)
+              if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
                {
-                 zbuffer[x][y].dist=dist;
+                 //zbuffer[x][y]=new Pixel(tngId,objId,Da*x+Db*y+Dc,col);
+                 zbuffer[x][y].dist=Da*x+Db*y+Dc;
                  zbuffer[x][y].tngId=tngId;
                  zbuffer[x][y].objId=objId;
                  zbuffer[x][y].col=col;
@@ -320,8 +362,10 @@ class Renderer
             }
           }
         }
+        timec=millis()-timec;
       }
     }
+    println("Time taken by comparebuff: ",timec);
     return;
   }
   
@@ -358,6 +402,7 @@ class Renderer
     compareBuff();
     
     int time=millis();
+    background(background);
     loadPixels();
     for (int x=0; x<w; x++)
     {
@@ -366,10 +411,6 @@ class Renderer
         if (zbuffer[x][y].tngId!=-1)
         {
           pixels[y*w+x]=shader(x,y);
-        }
-        else
-        {
-          pixels[y*w+x]=background;
         }
       }
     }
@@ -383,5 +424,18 @@ class Renderer
     int tngId=-1,objId=-1;
     double dist=Double.POSITIVE_INFINITY;
     color col=255;
+    
+    void reset()
+    {
+      dist=Double.POSITIVE_INFINITY;
+      tngId=objId=-1;
+    }
+    
+    Pixel(int tngId, int objId, double dist, color col)
+    {
+      this.tngId=tngId; this.objId=objId; this.dist=dist; this.col=col;
+    }
+    
+    Pixel() {}
   }
 }
