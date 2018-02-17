@@ -17,7 +17,7 @@ void setup()
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
   scene.addObject(cosa);*/
-  scene.addParallelepiped(new PVector(0.2,-0.7,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5));
+  scene.addParallelepiped(new PVector(-1,-0.7,), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5));
   
   for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
   
