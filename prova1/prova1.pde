@@ -13,15 +13,15 @@ void setup()
   
   time=millis();
   scene=new Scene(2,1);
-  /*Scene.Object cosa = scene.new Object(4);
+  Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
-  //scene.addObject(cosa);*/
-  scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
-  Scene.Object triangle = scene.new Object(1);
-  triangle.newTriangle(new PVector(0,0,-1), new PVector(1,0,-1), new PVector(0,-1,-1), color(255,0,0));
+  scene.addObject(cosa);
+  scene.addParallelepiped(new PVector(0.2,0.2,-1.1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
+  //Scene.Object triangle = scene.new Object(1);
+  //triangle.newTriangle(new PVector(0,0,-1), new PVector(0.5,-0.1,-1), new PVector(0.8,0.5,-1), color(255,0,0));
   //scene.addObject(triangle);
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
   
@@ -38,11 +38,11 @@ void setup()
 void draw()
 {
   nFrames++;
-  //scene.objects[0].move(-0.01,0,0);
+  scene.objects[0].move(-0.01,0,0);
   time=millis();
   scene.renderer.render();
   println("Rendering took ",millis()-time," milliseconds.");
-//  if (scene.objects[0].vertexes[0].x<=-1) println("TOTAL RENDERING TOOK: ", (millis()-time2)/nFrames, " per frame.");
+  if (scene.objects[0].vertexes[0].x<=-1) println("TOTAL RENDERING TOOK: ", (millis()-time2)/nFrames, " per frame.");
 }
 
 static class Math
@@ -329,84 +329,59 @@ class Renderer
         color col=scene.objects[objId].triangles[tngId].a;
         col=col==-1?scene.objects[objId].col:col;
         
-        double kAB=(c.y-b.y)*(a.x-b.x)-(c.x-b.x)*(a.y-b.y);
-        double kBC=(a.y-c.y)*(b.x-c.x)-(a.x-c.x)*(b.y-c.y);
-        double kCA=(b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y);
         double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
         double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
         double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
         double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
-        PVector P0=Math.min(a,b,c), P1=Math.max(a,b,c);
         timec=millis()-timec;
-        
-        //ma se trovassi un modo per ridurre al massimo i due for qui sotto?
-        // in pratica potresti basarti sul primo pixel che ha passato il test di appartenenza della precedente riga
         
         PVector A,B,C;
         if (a.y<=b.y&&a.y<=c.y)  // Praticamente sto imponendo A.y<=B.y<=C.y
-        {
-          A=a;
-          if (b.y<c.y) {B=b; C=c;}
-          else {B=c; C=b;}
-        }
+        { A=a; if (b.y<c.y) {B=b; C=c;} else {B=c; C=b;} }
         else if (b.y<=a.y&&b.y<=c.y)
-        {
-          A=b;
-          if (a.y<c.y) {B=a; C=c;}
-          else {B=c; C=a;}
-        }
+        { A=b; if (a.y<c.y) {B=a; C=c;} else {B=c; C=a;} }
         else
-        {
-          A=c;
-          if (a.y<b.y) {B=a; C=b;}
-          else {B=b; C=a;}
-        }
-        
-        PVector A1=A, B1, C1; //B1.x<C1.x
-        if (B.x<C.x)
-          {B1=B; C1=C;}
-        else
-          {C1=B; B1=C;}
+        { A=c; if (a.y<b.y) {B=a; C=b;} else {B=b; C=a;} }
         
         //DRAWING BASE DOWN TRIANGLE
         
-        double mA1B1=(A1.x-B1.x)/(A1.y-B1.y);
-        double mA1C1=(A1.x-C1.x)/(A1.y-C1.y);
+        double m1, m2, switchterm;
         
-        for (int y=(int)(A.y>0?A.y:0); y<=(int)(B.y<h?B.y:h); y++)
+        if (A.y!=B.y)
         {
-          int x0=(int)(A1.x+mA1B1*(y-A.y)), x1=(int)(A1.x+mA1C1*(y-A.y));
-          for (int x=x0>0?x0:0; x<=(x1<w-1?x1:(w-1)); x++)
+          m1=(A.x-B.x)/(A.y-B.y);
+          m2=(A.x-C.x)/(A.y-C.y);
+          if (m1>m2) { switchterm=m1; m1=m2; m2=switchterm; }
+          for (int y=(int)(A.y>0?A.y:0); y<=(int)(B.y<h?B.y:h); y++)
           {
-            //println(x,y);
-            if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
-             {
-               //zbuffer[x][y]=new Pixel(tngId,objId,Da*x+Db*y+Dc,col);
-               zbuffer[x][y].dist=Da*x+Db*y+Dc;
-               zbuffer[x][y].tngId=tngId;
-               zbuffer[x][y].objId=objId;
-               zbuffer[x][y].col=col;
-             }
+            int x0=(int)(A.x+m1*(y-A.y)), x1=(int)(A.x+m2*(y-A.y));
+            for (int x=x0>0?x0:0; x<=(x1<w-1?x1:(w-1)); x++)
+            {
+              if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
+               {
+                 zbuffer[x][y].dist=Da*x+Db*y+Dc;
+                 zbuffer[x][y].tngId=tngId;
+                 zbuffer[x][y].objId=objId;
+                 zbuffer[x][y].col=col;
+               }
+            }
           }
         }
         
         //DRAWING BASE UP TRIANGLE
         
-          //println(B.y,C.y);
         if (B.y!=C.y)
         {
-          mA1B1=(C.x-A1.x)/(C.y-A1.y);
-          mA1C1=(C.x-C1.x)/(C.y-C1.y);
-          //println(A1,C,C1);
+          m1=(C.x-A.x)/(C.y-A.y);
+          m2=(C.x-B.x)/(C.y-B.y);
+          if (m1<m2) { switchterm=m1; m1=m2; m2=switchterm; }
           for (int y=(int)(B.y>0?B.y:0); y<=(int)(C.y<h-1?C.y:h-1); y++)
           {
-            int x0=(int)(C.x-mA1B1*(C.y-y)), x1=(int)(C.x-mA1C1*(C.y-y));
+            int x0=(int)(C.x+m1*(y-C.y)), x1=(int)(C.x+m2*(y-C.y));
             for (int x=x0>0?x0:0; x<=(x1<w-1?x1:(w-1)); x++)
             {
-              //println(x,y);
               if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
                {
-                 //zbuffer[x][y]=new Pixel(tngId,objId,Da*x+Db*y+Dc,col);
                  zbuffer[x][y].dist=Da*x+Db*y+Dc;
                  zbuffer[x][y].tngId=tngId;
                  zbuffer[x][y].objId=objId;
@@ -415,29 +390,6 @@ class Renderer
             }
           }
         }
-        
-        /*for (int y=(int)(P0.y>0?P0.y:0); y<=(int)(P1.y<h-1?P1.y:h-1); y++)
-        {
-          for (int x=(int)(P0.x>0?P0.x:0); x<=(int)(P1.x<w-1?P1.x:w-1); x++)
-          {
-            if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
-              &&
-               (kBC*((y-c.y)*(b.x-c.x)-(x-c.x)*(b.y-c.y))>=0)
-              &&
-               (kCA*((y-a.y)*(c.x-a.x)-(x-a.x)*(c.y-a.y))>=0))
-            {
-              // (x,y) is in triangle
-              if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
-               {
-                 //zbuffer[x][y]=new Pixel(tngId,objId,Da*x+Db*y+Dc,col);
-                 zbuffer[x][y].dist=Da*x+Db*y+Dc;
-                 zbuffer[x][y].tngId=tngId;
-                 zbuffer[x][y].objId=objId;
-                 zbuffer[x][y].col=col;
-               }
-            }
-          }
-        }*/
         timec=millis()-timec;
       }
     }
