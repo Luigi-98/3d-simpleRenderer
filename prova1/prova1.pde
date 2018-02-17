@@ -340,9 +340,55 @@ class Renderer
         //ma se trovassi un modo per ridurre al massimo i due for qui sotto?
         // in pratica potresti basarti sul primo pixel che ha passato il test di appartenenza della precedente riga
         
-        for (int x=(int)(P0.x>0?P0.x:0); x<=(int)(P1.x<w?P1.x:w); x++)
+        PVector A,B,C;
+        if (a.y<b.y&&a.y<c.y)  // Praticamente sto imponendo A.y<=B.y<=C.y
         {
-          for (int y=(int)(P0.y>0?P0.y:0); y<=(int)(P1.y<h?P1.y:h); y++)
+          A=a;
+          if (b.y<c.y) {B=b; C=c;}
+          else {B=c; C=b;}
+        }
+        else if (b.y<a.y&&b.y<c.y)
+        {
+          A=b;
+          if (a.y<c.y) {B=a; C=c;}
+          else {B=c; C=a;}
+        }
+        else
+        {
+          A=c;
+          if (a.y<b.y) {B=a; C=b;}
+          else {B=b; C=a;}
+        }
+        
+        //DRAWING BASE DOWN TRIANGLE
+        
+        PVector A1=A, B1, C1;
+        if (B.x<C.x)
+          {B1=B; C1=C;}
+        else
+          {C1=B; B1=C;}
+        
+        double mA1B1=(A1.x-B1.x)/(A1.y-B1.y);
+        double mA1C1=(A1.x-C1.x)/(A1.y-C1.y);
+        
+        for (int y=(int)(A.y>0?A.y:0); y<=(int)(B.y<h?B.y:h); y++)
+        {
+          int x0=(int)(A1.x+mA1B1*(y-A.y)), x1=(int)(A1.x+mA1C1*(y-A.y));
+          for (int x=x0>0?x0:0; x<=(x1<w?x1:w);x++)
+          {
+            if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
+             {
+               //zbuffer[x][y]=new Pixel(tngId,objId,Da*x+Db*y+Dc,col);
+               zbuffer[x][y].dist=Da*x+Db*y+Dc;
+               zbuffer[x][y].tngId=tngId;
+               zbuffer[x][y].objId=objId;
+               zbuffer[x][y].col=col;
+             }
+          }
+        }
+        /*for (int y=(int)(P0.y>0?P0.y:0); y<=(int)(P1.y<h?P1.y:h); y++)
+        {
+          for (int x=(int)(P0.x>0?P0.x:0); x<=(int)(P1.x<w?P1.x:w); x++)
           {
             if ((kAB*((y-b.y)*(a.x-b.x)-(x-b.x)*(a.y-b.y))>=0)
               &&
@@ -361,7 +407,7 @@ class Renderer
                }
             }
           }
-        }
+        }*/
         timec=millis()-timec;
       }
     }
