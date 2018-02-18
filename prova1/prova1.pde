@@ -28,7 +28,7 @@ void setup()
   triangle.newTriangle(new PVector(0.2,-0.2,-1.3), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   scene.addObject(triangle);*/
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
-  scene.addSphere(new PVector(0,0,-1.5),0.5,50,50,color(255,0,0));
+  scene.addSphere(new PVector(0,0,-1.5),0.5,20,20,color(255,0,0));
   scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7),color(255,255,255)));
   println("Scene setup took ",millis()-time," milliseconds.");
   
@@ -42,7 +42,7 @@ void setup()
 void draw()
 {
   nFrames++;
-  scene.objects[0].move(-0.01,0,0);
+  //scene.objects[1].move(-0.01*0,0,-0.05);
   time=millis();
   scene.renderer.render();
   println("Rendering took ",millis()-time," milliseconds.");
@@ -277,51 +277,29 @@ class Scene
   int addSphere(PVector O, double R, int rows, int cols, color col)
   {
     Object obj=new Object(8*(rows+1)*(cols+1));
-    for (int r=0; r<=rows; r+=2)
+    PVector V[][]=new PVector[rows+1][cols+1];
+    for (int r=0; r<=rows; r+=1)
     {
-      for (int c=0; c<=cols; c+=2)
+      float Rsinphi=(float)(R*java.lang.Math.sin(java.lang.Math.PI*r/rows)), Rcosphi=(float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows));
+      for (int c=0; c<=cols; c+=1)
       {
-        PVector P = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
-                A = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
-                B = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
-                C = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O),
-                D = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
-                E = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O),
-                F = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
-                G = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
-                H = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
-                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O);
-        int t1=obj.newTriangle(A,P,D), t2=obj.newTriangle(A,P,B), t3=obj.newTriangle(P,D,G), t4=obj.newTriangle(D,G,F),
-          t5=obj.newTriangle(B,P,E), t6=obj.newTriangle(B,E,C), t7=obj.newTriangle(P,H,E), t8=obj.newTriangle(P,H,G);
-        
-        obj.triangles[t1].nA=obj.triangles[t2].nA=PVector.sub(O,A).normalize();
-        obj.triangles[t2].nC=obj.triangles[t5].nA=obj.triangles[t6].nA=PVector.sub(O,B).normalize();
-        obj.triangles[t6].nC=PVector.sub(O,C).normalize();
-        obj.triangles[t1].nC=obj.triangles[t3].nB=obj.triangles[t4].nA=PVector.sub(O,D).normalize();
-        obj.triangles[t5].nC=obj.triangles[t6].nB=obj.triangles[t7].nC=PVector.sub(O,E).normalize();
-        obj.triangles[t4].nC=PVector.sub(O,F).normalize();
-        obj.triangles[t3].nC=obj.triangles[t4].nB=obj.triangles[t8].nC=PVector.sub(O,G).normalize();
-        obj.triangles[t7].nB=obj.triangles[t8].nB=PVector.sub(O,H).normalize();
-        obj.triangles[t1].nB=obj.triangles[t2].nB=obj.triangles[t3].nA=obj.triangles[t5].nB=obj.triangles[t7].nA=obj.triangles[t8].nA=PVector.sub(O,P).normalize();
+        V[r][c]=new PVector((float)(java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*Rsinphi),
+                                  (float)(java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*Rsinphi),
+                                  (float)(Rcosphi)).add(O);
       }
     }
+    for (int r=0; r<=rows-1; r++)
+    {
+      for (int c=0; c<=cols-1; c++)
+      {
+        int t7=obj.newTriangle(V[r][c],V[r+1][c+1],V[r+1][c]), t8=obj.newTriangle(V[r+1][c+1],V[r][c],V[r][c+1]);
+        obj.triangles[t7].nC=PVector.sub(O,V[r+1][c]).normalize();
+        obj.triangles[t8].nC=PVector.sub(O,V[r][c+1]).normalize();
+        obj.triangles[t7].nB=obj.triangles[t8].nA=PVector.sub(O,V[r+1][c+1]).normalize();
+        obj.triangles[t7].nA=obj.triangles[t8].nB=PVector.sub(O,V[r][c]).normalize();
+      }
+    }
+    
     obj.col=col;
     return addObject(obj);
   }
@@ -466,6 +444,7 @@ class Renderer
   
   int[] render()
   {
+    int[] result=new int[w*h];
     project();
     
     compareBuff();
@@ -479,13 +458,13 @@ class Renderer
       {
         if (zbuffer[x][y].tngId!=-1)
         {
-          pixels[y*w+x]=shader(x,y);
+          pixels[y*w+x]=result[y*w+x]=shader(x,y);
         }
       }
     }
     updatePixels();
     println(millis()-time);
-    return new int[120];
+    return result;
   }
   
   class Pixel
