@@ -1,3 +1,5 @@
+import java.lang.Math;
+
 color background=color(255);
 int time,time2;
 Scene scene;
@@ -12,20 +14,22 @@ void setup()
   fill(255);
   
   time=millis();
-  scene=new Scene(2,1);
+  scene=new Scene(3,1);
   Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
-  scene.addObject(cosa);
-  scene.addParallelepiped(new PVector(0.2,0.2,-1.1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
-  //Scene.Object triangle = scene.new Object(1);
-  //triangle.newTriangle(new PVector(0,0,-1), new PVector(0.5,-0.1,-1), new PVector(0.8,0.5,-1), color(255,0,0));
-  //scene.addObject(triangle);
+  //scene.addObject(cosa);
+  scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
+  //scene.addParallelepiped(new PVector(-0.3,-0.7,-1.3), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,255,0));
+  /*Scene.Object triangle = scene.new Object(2);
+  triangle.newTriangle(new PVector(-0.3,-0.2,-1.8), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
+  triangle.newTriangle(new PVector(0.2,-0.2,-1.3), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
+  scene.addObject(triangle);*/
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
-  
-  scene.addLight(scene.new Light(2,2,1,new PVector(0.3,-0.5,-0.7),color(255,255,255)));
+  scene.addSphere(new PVector(0,0,-1.5),0.5,50,50,color(255,0,0));
+  scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7),color(255,255,255)));
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();
@@ -269,6 +273,58 @@ class Scene
     obj.col=col;
     return addObject(obj);
   }
+  
+  int addSphere(PVector O, double R, int rows, int cols, color col)
+  {
+    Object obj=new Object(8*(rows+1)*(cols+1));
+    for (int r=0; r<=rows; r+=2)
+    {
+      for (int c=0; c<=cols; c+=2)
+      {
+        PVector P = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
+                A = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
+                B = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
+                C = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c-1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O),
+                D = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
+                E = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*c/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O),
+                F = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r-1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r-1)/rows))).add(O),
+                G = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*r/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*r/rows))).add(O),
+                H = new PVector((float)(R*java.lang.Math.cos(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.sin(2*java.lang.Math.PI*(c+1)/cols)*java.lang.Math.sin(java.lang.Math.PI*(r+1)/rows)),
+                                  (float)(R*java.lang.Math.cos(java.lang.Math.PI*(r+1)/rows))).add(O);
+        int t1=obj.newTriangle(A,P,D), t2=obj.newTriangle(A,P,B), t3=obj.newTriangle(P,D,G), t4=obj.newTriangle(D,G,F),
+          t5=obj.newTriangle(B,P,E), t6=obj.newTriangle(B,E,C), t7=obj.newTriangle(P,H,E), t8=obj.newTriangle(P,H,G);
+        
+        obj.triangles[t1].nA=obj.triangles[t2].nA=PVector.sub(O,A).normalize();
+        obj.triangles[t2].nC=obj.triangles[t5].nA=obj.triangles[t6].nA=PVector.sub(O,B).normalize();
+        obj.triangles[t6].nC=PVector.sub(O,C).normalize();
+        obj.triangles[t1].nC=obj.triangles[t3].nB=obj.triangles[t4].nA=PVector.sub(O,D).normalize();
+        obj.triangles[t5].nC=obj.triangles[t6].nB=obj.triangles[t7].nC=PVector.sub(O,E).normalize();
+        obj.triangles[t4].nC=PVector.sub(O,F).normalize();
+        obj.triangles[t3].nC=obj.triangles[t4].nB=obj.triangles[t8].nC=PVector.sub(O,G).normalize();
+        obj.triangles[t7].nB=obj.triangles[t8].nB=PVector.sub(O,H).normalize();
+        obj.triangles[t1].nB=obj.triangles[t2].nB=obj.triangles[t3].nA=obj.triangles[t5].nB=obj.triangles[t7].nA=obj.triangles[t8].nA=PVector.sub(O,P).normalize();
+      }
+    }
+    obj.col=col;
+    return addObject(obj);
+  }
 }
 
 class Renderer
@@ -346,49 +402,34 @@ class Renderer
         //DRAWING BASE DOWN TRIANGLE
         
         double m1, m2, switchterm;
+        int y0=(int)java.lang.Math.floor(A.y>0?A.y:0), y1=(int)java.lang.Math.floor(B.y<h?B.y:h);
         
-        if (A.y!=B.y)
+        for (int i=0; i<2; i++) // i=0 ==> Base-down triangle, i=1 ==> Base-up triangle.
         {
-          m1=(A.x-B.x)/(A.y-B.y);
-          m2=(A.x-C.x)/(A.y-C.y);
-          if (m1>m2) { switchterm=m1; m1=m2; m2=switchterm; }
-          for (int y=(int)(A.y>0?A.y:0); y<=(int)(B.y<h?B.y:h); y++)
+          if (A.y!=B.y)
           {
-            int x0=(int)(A.x+m1*(y-A.y)), x1=(int)(A.x+m2*(y-A.y));
-            for (int x=x0>0?x0:0; x<=(x1<w-1?x1:(w-1)); x++)
+            m1=(A.x-B.x)/(A.y-B.y);
+            m2=(A.x-C.x)/(A.y-C.y);
+            if (m1*(1-2*i)>m2*(1-2*i)) { switchterm=m1; m1=m2; m2=switchterm; }
+            double x0=A.x+m1*(y0-A.y), x1=A.x+m2*(y0-A.y);
+            for (int y=y0; y<y1; y++)
             {
-              if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
-               {
-                 zbuffer[x][y].dist=Da*x+Db*y+Dc;
-                 zbuffer[x][y].tngId=tngId;
-                 zbuffer[x][y].objId=objId;
-                 zbuffer[x][y].col=col;
-               }
+              x0+=m1; x1+=m2;
+              for (int x=(int)(x0>0?x0:0); x<=(x1<w-1?x1:(w-1)); x++)
+              {
+                if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
+                 {
+                   zbuffer[x][y].dist=Da*x+Db*y+Dc;
+                   zbuffer[x][y].tngId=tngId;
+                   zbuffer[x][y].objId=objId;
+                   zbuffer[x][y].col=col;
+                 }
+              }
             }
           }
-        }
-        
-        //DRAWING BASE UP TRIANGLE
-        
-        if (B.y!=C.y)
-        {
-          m1=(C.x-A.x)/(C.y-A.y);
-          m2=(C.x-B.x)/(C.y-B.y);
-          if (m1<m2) { switchterm=m1; m1=m2; m2=switchterm; }
-          for (int y=(int)(B.y>0?B.y:0); y<=(int)(C.y<h-1?C.y:h-1); y++)
-          {
-            int x0=(int)(C.x+m1*(y-C.y)), x1=(int)(C.x+m2*(y-C.y));
-            for (int x=x0>0?x0:0; x<=(x1<w-1?x1:(w-1)); x++)
-            {
-              if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
-               {
-                 zbuffer[x][y].dist=Da*x+Db*y+Dc;
-                 zbuffer[x][y].tngId=tngId;
-                 zbuffer[x][y].objId=objId;
-                 zbuffer[x][y].col=col;
-               }
-            }
-          }
+          
+          PVector A1=A; A=C; C=A1;
+          y0=(int)java.lang.Math.floor(B.y>0?B.y:0); y1=(int)java.lang.Math.floor(A.y<h?A.y:h);
         }
         timec=millis()-timec;
       }
