@@ -16,20 +16,20 @@ void setup()
   time=millis();
   scene=new Scene(4,1);
   Scene.Object cosa = scene.new Object(4);
-  cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), color(255,0,0));
-  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1),color(0,0,255));
-  cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1),color(255,0,0));
-  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1),color(0,0,255));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), new Color(255,0,0));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1), new Color(0,0,255));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1), new Color(255,0,0));
+  cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1), new Color(0,0,255));
   scene.addObject(cosa);
-  scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(0,0,255));
-  scene.addParallelepiped(new PVector(-0.8,-0.7,-0.8), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), color(74,214,54));
+  scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), new Color(0,0,255));
+  scene.addParallelepiped(new PVector(-0.8,-0.7,-0.8), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), new Color(74,214,54));
   /*Scene.Object triangle = scene.new Object(2);
   triangle.newTriangle(new PVector(-0.3,-0.2,-1.8), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   triangle.newTriangle(new PVector(0.2,-0.2,-1.3), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   scene.addObject(triangle);*/
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
-  scene.addSphere(new PVector(0,0,-1.5),0.5,20,20,color(255,0,0));
-  scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7),color(255,255,255)));
+  scene.addSphere(new PVector(0,0,-1.5),0.5,20,20, new Color(255,0,0));
+  scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7), new Color(255,255,255)));
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();
@@ -111,7 +111,7 @@ class Scene
     PVector[] vertexes;
     PVector[] projected;
     Triangle[] triangles;
-    color col;
+    Color col;
     
     Object(int triangleN)
     {
@@ -123,7 +123,7 @@ class Scene
     class Triangle
     {
       int Aid=-1,Bid=-1,Cid=-1;
-      color a=-1,b=-1,c=-1;
+      Color a=new Color(-1,-1,-1),b=a,c=a;
       PVector nA, nB, nC;
       PVector barycAlpha, barycBeta;
       
@@ -146,7 +146,7 @@ class Scene
         nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
       }
       
-      Triangle(PVector A0, PVector B0, PVector C0, color col)
+      Triangle(PVector A0, PVector B0, PVector C0, Color col)
       {
         int q=3;
         for (int i=0; i<vertN; i++)
@@ -185,7 +185,7 @@ class Scene
       return triangN++;
     }
     
-    int newTriangle(PVector A, PVector B, PVector C, color c)
+    int newTriangle(PVector A, PVector B, PVector C, Color c)
     {
       triangles[triangN]=new Triangle(A,B,C,c);
       return triangN++;
@@ -222,10 +222,10 @@ class Scene
   class Light
   {
     float x,y,z;
-    color col;
+    Color col;
     PVector direction;
     
-    Light(float x, float y, float z, PVector direction, color col)
+    Light(float x, float y, float z, PVector direction, Color col)
     {
       this.x=x; this.y=y; this.z=z; this.direction=direction.normalize(); this.col=col;
     }
@@ -254,7 +254,7 @@ class Scene
     return nLights++;
   }
   
-  int addParallelepiped(PVector A, PVector l1, PVector l2, PVector l3, color col)
+  int addParallelepiped(PVector A, PVector l1, PVector l2, PVector l3, Color col)
   {
     Object obj=new Object(12);
     PVector B=PVector.add(A,l1).add(l2).add(l3);
@@ -274,7 +274,7 @@ class Scene
     return addObject(obj);
   }
   
-  int addSphere(PVector O, double R, int rows, int cols, color col)
+  int addSphere(PVector O, double R, int rows, int cols, Color col)
   {
     Object obj=new Object(8*(rows+1)*(cols+1));
     PVector V[][]=new PVector[rows+1][cols+1];
@@ -360,8 +360,8 @@ class Renderer
       for (int tngId=0; tngId<scene.objects[objId].triangN; tngId++)
       {
         PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
-        color col=scene.objects[objId].triangles[tngId].a;
-        col=col==-1?scene.objects[objId].col:col;
+        Color col=scene.objects[objId].triangles[tngId].a;
+        col=col.r==-1?scene.objects[objId].col:col;
         
         double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
         double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
@@ -420,7 +420,7 @@ class Renderer
   {
     Scene.Object obj=scene.objects[zbuffer[x][y].objId];
     Scene.Object.Triangle tng=obj.triangles[zbuffer[x][y].tngId];
-    color col0=zbuffer[x][y].col;
+    Color col0=zbuffer[x][y].col;
     tng.initializeBarycentric();
     /**
       Bisogna interpolare considerando che nA, nB ed nC sono i valori della funzione
@@ -437,33 +437,37 @@ class Renderer
     for (int i=0; i<scene.nLights; i++)
     {
       float phong=scene.lights[i].direction.dot(n);
-      col0=color(phong*red(col0),phong*green(col0),phong*blue(col0));
+      col0=col0.multiply(phong, col0);//color(phong*red(col0),phong*green(col0),phong*blue(col0));
     }
-    return col0;
+    return col0.getColor();
   }
   
   int[] render()
   {
-    int[] result=new int[w*h];
-    project();
-    
-    compareBuff();
-    
     int time=millis();
+    int[] result=new int[w*h];
+    project(projection);
+    println("Projection time:", millis()-time);
+    
+    time=millis();
+    compareBuff();
+    println("Comparebuff time:", millis()-time);
+    
+    time=millis();
     background(background);
     loadPixels();
-    for (int x=0; x<w; x++)
+    for (int y=0; y<h; y++)
     {
-      for (int y=0; y<h; y++)
+      for (int x=0; x<w; x++)
       {
         if (zbuffer[x][y].tngId!=-1)
         {
-          pixels[y*w+x]=result[y*w+x]=shader(x,y);
+          pixels[w*y+x]=result[w*y+x]=shader(x,y); //cnt = w*y+x
         }
       }
     }
     updatePixels();
-    println(millis()-time);
+    println("Drawing time:",millis()-time);
     return result;
   }
   
@@ -471,7 +475,7 @@ class Renderer
   {
     int tngId=-1,objId=-1;
     double dist=Double.POSITIVE_INFINITY;
-    color col=255;
+    Color col=new Color(0,0,0);
     
     void reset()
     {
@@ -479,11 +483,26 @@ class Renderer
       tngId=objId=-1;
     }
     
-    Pixel(int tngId, int objId, double dist, color col)
+    Pixel(int tngId, int objId, double dist, Color col)
     {
       this.tngId=tngId; this.objId=objId; this.dist=dist; this.col=col;
     }
     
     Pixel() {}
   }
+}
+
+class Color
+{
+  int r, g, b;
+  
+  Color(int r, int g, int b) { this.r=r; this.g=g; this.b=b; }
+  
+  Color(float r, float g, float b) { this.r=(int)r; this.g=(int)g; this.b=(int)b; }
+  
+  Color multiply(float k) {r=(int)(r*k); g=(int)(g*k); b=(int)(b*k); return this;}
+  
+  Color multiply(float k, Color c) {return new Color((int)(c.r*k),(int)(c.g*k),(int)(c.b*k));}
+  
+  color getColor() {return color(r,g,b);}
 }
