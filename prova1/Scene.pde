@@ -1,3 +1,5 @@
+import java.lang.Math;
+
 class Scene
 {
   class Object
@@ -116,14 +118,34 @@ class Scene
       transform(translation);
     }
     
+    void rotateX(double a)
+    {
+      Math.Matrix rotation = new Math.Matrix(3,3);
+      rotation.fill(0);
+      rotation.a[0][0]=1;
+      rotation.a[1][1]=rotation.a[2][2]=java.lang.Math.cos(a);
+      rotation.a[2][1]=-(rotation.a[1][2]=java.lang.Math.sin(a));
+      transform(rotation);
+    }
+    
+    void rotateY(double a)
+    {
+      Math.Matrix rotation = new Math.Matrix(3,3);
+      rotation.fill(0);
+      rotation.a[1][1]=1;
+      rotation.a[0][0]=rotation.a[2][2]=java.lang.Math.cos(a);
+      rotation.a[2][0]=-(rotation.a[0][2]=java.lang.Math.sin(a));
+      transform(rotation);
+    }
+    
     void scale(float x, float y, float z)
     {
-      Math.Matrix translation = new Math.Matrix(3,3);
-      translation.fill(0);
-      translation.a[0][0]=x;
-      translation.a[1][1]=y;
-      translation.a[2][2]=z;
-      transform(translation);
+      Math.Matrix scale = new Math.Matrix(3,3);
+      scale.fill(0);
+      scale.a[0][0]=x;
+      scale.a[1][1]=y;
+      scale.a[2][2]=z;
+      transform(scale);
     }
     
     void transform(Math.Matrix m)

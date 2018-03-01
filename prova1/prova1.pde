@@ -52,6 +52,9 @@ void draw()
   nFrames++;
   //scene.objects[1].move(-0.01*0,0,-0.05);
   time=millis();
+  scene.objects[0].move(0,0,1);
+  scene.objects[0].rotateY((double)0.1);
+  scene.objects[0].move(0,0,-1);
   scene.renderer.render();
   println("Rendering took ",millis()-time," milliseconds.");
   if (scene.objects[0].vertexes[0].x<=-1) println("TOTAL RENDERING TOOK: ", (millis()-time2)/nFrames, " per frame.");
