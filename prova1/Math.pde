@@ -33,6 +33,32 @@ static class Math
       result.z=(float)(k*(a[2][0]*v.x+a[2][1]*v.y+a[2][2]*v.z+a23));
       return result;
     }
+    
+    Matrix extend(Matrix m)
+    {
+      if (m.h==4&&m.w==4) return m;
+      Matrix res = new Matrix(4,4);
+      res.fill(0);
+      for (int i=0; i<m.w; i++)
+        for (int j=0; j<m.h; j++)
+          res.a[i][j]=m.a[i][j];
+      res.a[3][3]=1;
+      return res;
+    }
+  
+    Matrix multiply(Matrix m)
+    {
+      if (m.h!=h||m.w!=w) return extend(this).multiply(extend(m));
+      Matrix res=new Matrix(w,h);
+      for (int i=0; i<w; i++)
+        for (int j=0; j<h; j++)
+        {
+          res.a[i][j]=0;
+          for (int k=0; k<w; k++)
+            res.a[i][j]+=a[i][k]*m.a[k][j];
+        }
+      return res;
+    }
   }
   
   static PVector min(PVector A, PVector B, PVector C)

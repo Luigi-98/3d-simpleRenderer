@@ -2,7 +2,7 @@ class Renderer
 {
   int w=640, h=480;
   double r=1,t=1,n=1,f=2;
-  Math.Matrix projection;
+  Math.Matrix projection, renderMatrix;
   Pixel zbuffer[][];
   Scene scene;
   
@@ -16,12 +16,14 @@ class Renderer
     for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y]=new Pixel();
 
     projection = new Math.Matrix(4,4);
+    projection.fill(0);
     projection.a[0][0]=n/r;
     projection.a[1][1]=n/t;
     projection.a[2][2]=-(f+n)/(f-n);
     projection.a[2][3]=-2*f*n/(f-n);
     projection.a[3][2]=-1;
-    projection.a[0][1]=projection.a[0][2]=projection.a[0][3]=projection.a[1][0]=projection.a[1][2]=projection.a[1][3]=projection.a[2][0]=projection.a[2][1]=projection.a[3][0]=projection.a[3][1]=projection.a[3][3]=0;
+    
+    renderMatrix=projection;
   }
   
   void setScene(Scene scene)
@@ -29,13 +31,14 @@ class Renderer
     this.scene=scene;
   }
   
-  void project(Math.Matrix projection)
+  void project(Math.Matrix renderMatrix)
   {
     for (int j=0; j<scene.nObjects; j++)
     {
+      Math.Matrix objMatrix=renderMatrix.multiply(scene.objects[j].transformationMatrix);
       for (int i=0; i<scene.objects[j].vertN; i++)
       {
-        scene.objects[j].projected[i]=projection.applyTo(scene.objects[j].vertexes[i]);
+        scene.objects[j].projected[i]=objMatrix.applyTo(scene.objects[j].vertexes[i]);
         scene.objects[j].projected[i].x*=w/2;
         scene.objects[j].projected[i].y*=-h/2;
         scene.objects[j].projected[i].add(w/2,h/2);
@@ -139,7 +142,7 @@ class Renderer
   {
     int time=millis();
     int[] result=new int[w*h];
-    project(projection);
+    project(renderMatrix);
     println("Projection time:", millis()-time);
     
     time=millis();

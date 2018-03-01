@@ -9,12 +9,16 @@ class Scene
     PVector[] projected;
     Triangle[] triangles;
     Color col;
+    Math.Matrix transformationMatrix;
     
     Object(int triangleN)
     {
       vertexes=new PVector[triangleN*3];
       projected=new PVector[triangleN*3];
       triangles=new Triangle[triangleN];
+      transformationMatrix=new Math.Matrix(4,4);
+      transformationMatrix.fill(0);
+      transformationMatrix.a[0][0]=transformationMatrix.a[1][1]=transformationMatrix.a[2][2]=transformationMatrix.a[3][3]=1;
     }
     
     class Triangle
@@ -115,7 +119,8 @@ class Scene
       translation.a[1][3]=y;
       translation.a[2][3]=z;
       translation.a[3][3]=1;
-      transform(translation);
+      transformationMatrix=transformationMatrix.multiply(translation);
+      //transform(translation);
     }
     
     void rotateX(double a)
@@ -125,7 +130,8 @@ class Scene
       rotation.a[0][0]=1;
       rotation.a[1][1]=rotation.a[2][2]=java.lang.Math.cos(a);
       rotation.a[2][1]=-(rotation.a[1][2]=java.lang.Math.sin(a));
-      transform(rotation);
+      transformationMatrix=transformationMatrix.multiply(rotation);
+      //transform(rotation);
     }
     
     void rotateY(double a)
@@ -135,7 +141,8 @@ class Scene
       rotation.a[1][1]=1;
       rotation.a[0][0]=rotation.a[2][2]=java.lang.Math.cos(a);
       rotation.a[2][0]=-(rotation.a[0][2]=java.lang.Math.sin(a));
-      transform(rotation);
+      transformationMatrix=transformationMatrix.multiply(rotation);
+      //transform(rotation);
     }
     
     void scale(float x, float y, float z)
