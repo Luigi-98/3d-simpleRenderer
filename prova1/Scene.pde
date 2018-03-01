@@ -38,7 +38,7 @@ class Scene
         
         //a=c;
         
-        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
+        nA=nB=nC=PVector.sub(C0, A0).cross(PVector.sub(B0,A0)).normalize();
       }
       
       Triangle(PVector A0, PVector B0, PVector C0, Color col)
@@ -55,12 +55,12 @@ class Scene
         if (Bid==-1) Bid=newVert(B0);
         if (Cid==-1) Cid=newVert(C0);
         
-        nA=nB=nC=PVector.sub(B0, A0).cross(PVector.sub(C0,A0)).normalize();
+        nA=nB=nC=PVector.sub(C0, A0).cross(PVector.sub(B0,A0)).normalize();
         
         a=col;
       }
       
-      Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;}
+      Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;nA=nB=nC=PVector.sub(vertexes[C], vertexes[A]).cross(PVector.sub(vertexes[B],vertexes[A])).normalize();}
       
       void initializeBarycentric()
       {
@@ -91,7 +91,6 @@ class Scene
       triangles[triangN]=new Triangle(A,B,C);
       return triangN++;
     }
-    }
     
     int newVert(PVector P)
     {
@@ -114,6 +113,16 @@ class Scene
       translation.a[1][3]=y;
       translation.a[2][3]=z;
       translation.a[3][3]=1;
+      transform(translation);
+    }
+    
+    void scale(float x, float y, float z)
+    {
+      Math.Matrix translation = new Math.Matrix(3,3);
+      translation.fill(0);
+      translation.a[0][0]=x;
+      translation.a[1][1]=y;
+      translation.a[2][2]=z;
       transform(translation);
     }
     

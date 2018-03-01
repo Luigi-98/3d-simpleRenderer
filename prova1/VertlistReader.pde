@@ -4,11 +4,13 @@ import java.util.List;
 
 static class VertlistReader
 {
-  static Object readFile(Scene scene, String filename) throws IOException
+  static Scene.Object readFile(Scene scene, String filename) throws IOException
   {
     Scene.Object res=null;
-    try (BufferedReader bf = Files.newBufferedReader(Paths.get(filename)))
+    try
     {
+      BufferedReader bf = Files.newBufferedReader(Paths.get(filename));
+      
       String line = null;
       
       int nFaces=0, nVerts=0, vertN=0;
@@ -21,8 +23,11 @@ static class VertlistReader
         if (line.startsWith("vertN:"))
         {
           nVerts=Integer.parseInt(line.split(" ")[1]);
-          nFaces=nVerts/3;
           verts=new int[nVerts];
+        }
+        else if (line.startsWith("facesN:"))
+        {
+          nFaces=Integer.parseInt(line.split(" ")[1]);
           res=scene.new Object(nFaces);
         }
         else if (line.startsWith("Vertexes:"))
@@ -66,6 +71,7 @@ static class VertlistReader
       
       bf.close();
     }
+    catch (IOException e) {}
     return res;
   }
 }
