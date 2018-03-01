@@ -86,9 +86,22 @@ class Scene
       return triangN++;
     }
     
+    int newTriangle(int A, int B, int C)
+    {
+      triangles[triangN]=new Triangle(A,B,C);
+      return triangN++;
+    }
+    }
+    
     int newVert(PVector P)
     {
       vertexes[vertN]=P;
+      return vertN++;
+    }
+    
+    int newVert(float x, float y, float z)
+    {
+      vertexes[vertN]=new PVector(x,y,z);
       return vertN++;
     }
     

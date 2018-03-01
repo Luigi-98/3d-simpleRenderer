@@ -15,20 +15,21 @@ void setup()
   
   time=millis();
   scene=new Scene(4,1);
-  Scene.Object cosa = scene.new Object(4);
+  /*Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), new Color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1), new Color(0,0,255));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(-1,0,-2), new PVector(-1,1,-1), new Color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(-1,1,-1), new Color(0,0,255));
   scene.addObject(cosa);
   scene.addParallelepiped(new PVector(0.2,0.2,-1), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), new Color(0,0,255));
-  scene.addParallelepiped(new PVector(-0.8,-0.7,-0.8), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), new Color(74,214,54));
+  scene.addParallelepiped(new PVector(-0.8,-0.7,-0.8), new PVector(0,0.5,0), new PVector(0.5,0,0), new PVector(0,0,-0.5), new Color(74,214,54));*/
   /*Scene.Object triangle = scene.new Object(2);
   triangle.newTriangle(new PVector(-0.3,-0.2,-1.8), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   triangle.newTriangle(new PVector(0.2,-0.2,-1.3), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   scene.addObject(triangle);*/
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
-  scene.addSphere(new PVector(0,0,-1.5),0.5,20,20, new Color(255,0,0));
+  //scene.addSphere(new PVector(0,0,-1.5),0.5,20,20, new Color(255,0,0));
+  //scene.addObject(VertlistReader.readFile(scene,"/home/luigi/Development/Processing/3d-simpleRenderer/vertListTest.vl"));
   scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7), new Color(255,255,255)));
   println("Scene setup took ",millis()-time," milliseconds.");
   
