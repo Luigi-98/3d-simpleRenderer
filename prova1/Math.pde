@@ -39,8 +39,8 @@ static class Math
       if (m.h==4&&m.w==4) return m;
       Matrix res = new Matrix(4,4);
       res.fill(0);
-      for (int i=0; i<m.w; i++)
-        for (int j=0; j<m.h; j++)
+      for (int i=0; i<m.h; i++)
+        for (int j=0; j<m.w; j++)
           res.a[i][j]=m.a[i][j];
       res.a[3][3]=1;
       return res;
@@ -57,6 +57,14 @@ static class Math
           for (int k=0; k<w; k++)
             res.a[i][j]+=a[i][k]*m.a[k][j];
         }
+      return res;
+    }
+    
+    static Matrix identity()
+    {
+      Matrix res=new Matrix(4,4);
+      res.fill(0);
+      res.a[0][0]=res.a[1][1]=res.a[2][2]=res.a[3][3]=1;
       return res;
     }
   }

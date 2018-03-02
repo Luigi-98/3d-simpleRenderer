@@ -33,11 +33,22 @@ void setup()
     scene.addObject(VertlistReader.readFile(scene,"/home/luigi/Downloads/bunny/reconstruction/bun_zipper.vl"));//Development/Processing/3d-simpleRenderer/vertListTest.vl"));
   }
   catch (IOException e) {}
+  try  {
+    scene.addObject(VertlistReader.readFile(scene,"/home/luigi/Downloads/bunny/reconstruction/bun_zipper.vl"));//Development/Processing/3d-simpleRenderer/vertListTest.vl"));
+  }
+  catch (IOException e) {}
   scene.objects[0].move(0,0,0);
-  scene.objects[0].col=new Color(255,0,0);
-  scene.objects[0].scale(3,3,3);
-  scene.objects[0].move(0,-0.5,-1);
+  scene.objects[0].col=new Color(0,255,0);
+  scene.objects[0].scale(5,5,5);
+  scene.objects[0].move(0,-1,-1.7);
+  scene.objects[1].move(0,0,0);
+  scene.objects[1].reflectX();
+  scene.objects[1].col=new Color(0,0,255);
+  scene.objects[1].scale(5,5,5);
+  scene.objects[1].move(0,-1,-1.7);
+  scene.addParallelepiped(new PVector(0.2,0,-1), new PVector(0,0.1,0), new PVector(0.1,0,0), new PVector(0,0,-0.01), new Color(0,0,255));
   scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7), new Color(255,255,255)));
+  scene.addSphere(new PVector(0,-1,-1),0.2,20,20, new Color(255,0,0));
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();

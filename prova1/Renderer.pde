@@ -22,6 +22,10 @@ class Renderer
     projection.a[2][2]=-(f+n)/(f-n);
     projection.a[2][3]=-2*f*n/(f-n);
     projection.a[3][2]=-1;
+    /*projection.a[0][0]=projection.a[1][1]=n;
+    projection.a[2][2]=f/(f-n);
+    projection.a[2][3]=-f*n/(f-n);
+    projection.a[3][2]=1;*/
     
     renderMatrix=projection;
   }
@@ -58,54 +62,56 @@ class Renderer
         PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
         Color col=scene.objects[objId].triangles[tngId].a;
         col=col.r==-1?scene.objects[objId].col:col;
-        
-        double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
-        double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
-        double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
-        double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
-        timec=millis()-timec;
-        
-        PVector A,B,C;
-        if (a.y<=b.y&&a.y<=c.y)  // Praticamente sto imponendo A.y<=B.y<=C.y
-        { A=a; if (b.y<c.y) {B=b; C=c;} else {B=c; C=b;} }
-        else if (b.y<=a.y&&b.y<=c.y)
-        { A=b; if (a.y<c.y) {B=a; C=c;} else {B=c; C=a;} }
-        else
-        { A=c; if (a.y<b.y) {B=a; C=b;} else {B=b; C=a;} }
-        
-        //DRAWING BASE DOWN TRIANGLE
-        
-        double m1, m2, switchterm;
-        int y0=(int)java.lang.Math.floor(A.y>0?A.y:0), y1=(int)java.lang.Math.floor(B.y<h?B.y:h);
-        
-        for (int i=0; i<2; i++) // i=0 ==> Base-down triangle, i=1 ==> Base-up triangle.
+        if (a.z>=-1&&a.z<=1&&b.z>=-1&&b.z<=1&&c.z>=-1&&c.z<=1)
         {
-          if (A.y!=B.y)
+          double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
+          double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
+          double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
+          double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
+          timec=millis()-timec;
+          
+          PVector A,B,C;
+          if (a.y<=b.y&&a.y<=c.y)  // Praticamente sto imponendo A.y<=B.y<=C.y
+          { A=a; if (b.y<c.y) {B=b; C=c;} else {B=c; C=b;} }
+          else if (b.y<=a.y&&b.y<=c.y)
+          { A=b; if (a.y<c.y) {B=a; C=c;} else {B=c; C=a;} }
+          else
+          { A=c; if (a.y<b.y) {B=a; C=b;} else {B=b; C=a;} }
+          
+          //DRAWING BASE DOWN TRIANGLE
+          
+          double m1, m2, switchterm;
+          int y0=(int)java.lang.Math.floor(A.y>0?A.y:0), y1=(int)java.lang.Math.floor(B.y<h?B.y:h);
+          
+          for (int i=0; i<2; i++) // i=0 ==> Base-down triangle, i=1 ==> Base-up triangle.
           {
-            m1=(A.x-B.x)/(A.y-B.y);
-            m2=(A.x-C.x)/(A.y-C.y);
-            if (m1*(1-2*i)>m2*(1-2*i)) { switchterm=m1; m1=m2; m2=switchterm; }
-            double x0=A.x+m1*(y0-A.y), x1=A.x+m2*(y0-A.y);
-            for (int y=y0; y<y1; y++)
+            if (A.y!=B.y)
             {
-              x0+=m1; x1+=m2;
-              for (int x=(int)(x0>0?x0:0); x<=(x1<w-1?x1:(w-1)); x++)
+              m1=(A.x-B.x)/(A.y-B.y);
+              m2=(A.x-C.x)/(A.y-C.y);
+              if (m1*(1-2*i)>m2*(1-2*i)) { switchterm=m1; m1=m2; m2=switchterm; }
+              double x0=A.x+m1*(y0-A.y), x1=A.x+m2*(y0-A.y);
+              for (int y=y0; y<y1; y++)
               {
-                if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
-                 {
-                   zbuffer[x][y].dist=Da*x+Db*y+Dc;
-                   zbuffer[x][y].tngId=tngId;
-                   zbuffer[x][y].objId=objId;
-                   zbuffer[x][y].col=col;
-                 }
+                x0+=m1; x1+=m2;
+                for (int x=(int)(x0>0?x0:0); x<=(x1<w-1?x1:(w-1)); x++)
+                {
+                  if (Da*x+Db*y+Dc<zbuffer[x][y].dist&&Da*x+Db*y+Dc>=-1&&Da*x+Db*y+Dc<=1)
+                   {
+                     zbuffer[x][y].dist=Da*x+Db*y+Dc;
+                     zbuffer[x][y].tngId=tngId;
+                     zbuffer[x][y].objId=objId;
+                     zbuffer[x][y].col=col;
+                   }
+                }
               }
             }
+            
+            PVector A1=A; A=C; C=A1;
+            y0=(int)java.lang.Math.floor(B.y>0?B.y:0); y1=(int)java.lang.Math.floor(A.y<h?A.y:h);
           }
-          
-          PVector A1=A; A=C; C=A1;
-          y0=(int)java.lang.Math.floor(B.y>0?B.y:0); y1=(int)java.lang.Math.floor(A.y<h?A.y:h);
+          timec=millis()-timec;
         }
-        timec=millis()-timec;
       }
     }
     println("Time taken by comparebuff: ",timec);

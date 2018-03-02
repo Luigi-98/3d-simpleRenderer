@@ -27,7 +27,7 @@ static class VertlistReader
         }
         else if (line.startsWith("facesN:"))
         {
-          nFaces=Integer.parseInt(line.split(" ")[1]);
+          nFaces=2*Integer.parseInt(line.split(" ")[1]);
           res=scene.new Object(nFaces);
         }
         else if (line.startsWith("Vertexes:"))

@@ -119,7 +119,7 @@ class Scene
       translation.a[1][3]=y;
       translation.a[2][3]=z;
       translation.a[3][3]=1;
-      transformationMatrix=transformationMatrix.multiply(translation);
+      transformationMatrix=translation.multiply(transformationMatrix);
       //transform(translation);
     }
     
@@ -130,7 +130,7 @@ class Scene
       rotation.a[0][0]=1;
       rotation.a[1][1]=rotation.a[2][2]=java.lang.Math.cos(a);
       rotation.a[2][1]=-(rotation.a[1][2]=java.lang.Math.sin(a));
-      transformationMatrix=transformationMatrix.multiply(rotation);
+      transformationMatrix=rotation.multiply(transformationMatrix);
       //transform(rotation);
     }
     
@@ -141,7 +141,7 @@ class Scene
       rotation.a[1][1]=1;
       rotation.a[0][0]=rotation.a[2][2]=java.lang.Math.cos(a);
       rotation.a[2][0]=-(rotation.a[0][2]=java.lang.Math.sin(a));
-      transformationMatrix=transformationMatrix.multiply(rotation);
+      transformationMatrix=rotation.multiply(transformationMatrix);
       //transform(rotation);
     }
     
@@ -152,7 +152,18 @@ class Scene
       scale.a[0][0]=x;
       scale.a[1][1]=y;
       scale.a[2][2]=z;
-      transform(scale);
+      transformationMatrix=scale.multiply(transformationMatrix);
+      //transform(scale);
+    }
+    
+    void reflectX()
+    {
+      Math.Matrix matrix = new Math.Matrix(3,3);
+      matrix.fill(0);
+      matrix.a[0][0]=-1;
+      matrix.a[1][1]=matrix.a[2][2]=1;
+      transformationMatrix=matrix.multiply(transformationMatrix);
+      //transform(scale);
     }
     
     void transform(Math.Matrix m)
