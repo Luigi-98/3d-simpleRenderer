@@ -5,6 +5,7 @@ class Renderer
   Math.Matrix projection, renderMatrix;
   Pixel zbuffer[][];
   Scene scene;
+  PVector[][] projected;
   
   Renderer(int width, int height)
   {
@@ -26,13 +27,22 @@ class Renderer
     projection.a[2][2]=f/(f-n);
     projection.a[2][3]=-f*n/(f-n);
     projection.a[3][2]=1;*/
-    
-    renderMatrix=projection;
+    Math.Matrix screenPositioning=new Math.Matrix(4,4);
+    screenPositioning.fill(0);
+    screenPositioning.a[0][0]=screenPositioning.a[0][3]=w/2;
+    screenPositioning.a[1][1]=-(screenPositioning.a[1][3]=h/2);
+    screenPositioning.a[2][2]=screenPositioning.a[3][3]=1;
+    renderMatrix=screenPositioning.multiply(projection);
   }
   
   void setScene(Scene scene)
   {
     this.scene=scene;
+    
+    projected=new PVector[scene.nObjects][];
+    
+    for (int i=0; i<scene.nObjects; i++)
+      projected[i]=new PVector[scene.objects[i].vertN];
   }
   
   void project(Math.Matrix renderMatrix)
@@ -42,33 +52,27 @@ class Renderer
       Math.Matrix objMatrix=renderMatrix.multiply(scene.objects[j].transformationMatrix);
       for (int i=0; i<scene.objects[j].vertN; i++)
       {
-        scene.objects[j].projected[i]=objMatrix.applyTo(scene.objects[j].vertexes[i]);
-        scene.objects[j].projected[i].x*=w/2;
-        scene.objects[j].projected[i].y*=-h/2;
-        scene.objects[j].projected[i].add(w/2,h/2);
+        projected[j][i]=objMatrix.applyTo(scene.objects[j].vertexes[i]);
       }
     }
   }
   
   void compareBuff()
   {
-    int timec=0;
     for (int x=0; x<w; x++) for (int y=0; y<h; y++) zbuffer[x][y].reset();
     
     for (int objId=0; objId<scene.nObjects; objId++)
     {
       for (int tngId=0; tngId<scene.objects[objId].triangN; tngId++)
       {
-        PVector a=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Aid], b=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Bid], c=scene.objects[objId].projected[scene.objects[objId].triangles[tngId].Cid];
+        PVector a=projected[objId][scene.objects[objId].triangles[tngId].Aid], b=projected[objId][scene.objects[objId].triangles[tngId].Bid], c=projected[objId][scene.objects[objId].triangles[tngId].Cid];
         Color col=scene.objects[objId].triangles[tngId].a;
         col=col.r==-1?scene.objects[objId].col:col;
         if (a.z>=-1&&a.z<=1&&b.z>=-1&&b.z<=1&&c.z>=-1&&c.z<=1)
         {
-          double D=1/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
-          double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)*D;
-          double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)*D;
-          double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)*D;
-          timec=millis()-timec;
+          double Da=(a.z*b.y-a.y*b.z-a.z*c.y+a.y*c.z+b.z*c.y-b.y*c.z)/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
+          double Db=(a.x*b.z-a.z*b.x-a.x*c.z+a.z*c.x+b.x*c.z-b.z*c.x)/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
+          double Dc=((a.x*b.y-a.y*b.x)*c.z+(-a.x*c.y+a.y*c.x)*b.z+(b.x*c.y-b.y*c.x)*a.z)/(a.x*b.y-a.y*b.x-a.x*c.y+a.y*c.x+b.x*c.y-b.y*c.x);
           
           PVector A,B,C;
           if (a.y<=b.y&&a.y<=c.y)  // Praticamente sto imponendo A.y<=B.y<=C.y
@@ -96,7 +100,7 @@ class Renderer
                 x0+=m1; x1+=m2;
                 for (int x=(int)(x0>0?x0:0); x<=(x1<w-1?x1:(w-1)); x++)
                 {
-                  if (Da*x+Db*y+Dc<zbuffer[x][y].dist&&Da*x+Db*y+Dc>=-1&&Da*x+Db*y+Dc<=1)
+                  if (Da*x+Db*y+Dc<zbuffer[x][y].dist)
                    {
                      zbuffer[x][y].dist=Da*x+Db*y+Dc;
                      zbuffer[x][y].tngId=tngId;
@@ -110,11 +114,9 @@ class Renderer
             PVector A1=A; A=C; C=A1;
             y0=(int)java.lang.Math.floor(B.y>0?B.y:0); y1=(int)java.lang.Math.floor(A.y<h?A.y:h);
           }
-          timec=millis()-timec;
         }
       }
     }
-    println("Time taken by comparebuff: ",timec);
     return;
   }
   
@@ -123,21 +125,12 @@ class Renderer
     Scene.Object obj=scene.objects[zbuffer[x][y].objId];
     Scene.Object.Triangle tng=obj.triangles[zbuffer[x][y].tngId];
     Color col0=zbuffer[x][y].col;
-    /**
-      Bisogna interpolare considerando che nA, nB ed nC sono i valori della funzione
-        in (x,y,zbuffer[x][y].dist).
-        
-        x ed y vanno bene quelli.
-        
-       No, non esattamente: le coordinate proiettate non conservano proporzioni né aree, ma noi approssimiamo.
-    **/
     
-    PVector A=obj.projected[tng.Aid], B=obj.projected[tng.Bid], C=obj.projected[tng.Cid];
-    float den=1/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y));
-    float   alpha=(float)(den*((B.y*C.z-B.z*C.y)*x+(B.z*C.x-B.x*C.z)*y+(B.x*C.y-B.y*C.x)*zbuffer[x][y].dist)),
-            beta=(float)(den*((-A.y*C.z+A.z*C.y)*x+(-A.z*C.x+A.x*C.z)*y+(-A.x*C.y+A.y*C.x)*zbuffer[x][y].dist));
-    PVector n=PVector.add(PVector.mult(tng.nA,alpha),PVector.mult(tng.nB,beta)).add(PVector.mult(tng.nC,1-alpha-beta)); // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
-    n=obj.transformationMatrix.applyTo(n).normalize();
+    //PVector A=obj.projected[tng.Aid], B=obj.projected[tng.Bid], C=obj.projected[tng.Cid];
+    PVector A=projected[zbuffer[x][y].objId][tng.Aid], B=projected[zbuffer[x][y].objId][tng.Bid], C=projected[zbuffer[x][y].objId][tng.Cid];
+    float   alpha=(float)(((B.y*C.z-B.z*C.y)*x+(B.z*C.x-B.x*C.z)*y+(B.x*C.y-B.y*C.x)*zbuffer[x][y].dist))/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y)),
+            beta=(float)(((-A.y*C.z+A.z*C.y)*x+(-A.z*C.x+A.x*C.z)*y+(-A.x*C.y+A.y*C.x)*zbuffer[x][y].dist)/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y)));
+    PVector n=obj.transformationMatrix.applyTo(PVector.add(PVector.mult(tng.nA,alpha),PVector.mult(tng.nB,beta)).add(PVector.mult(tng.nC,1-alpha-beta))).normalize(); // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
     for (int i=0; i<scene.nLights; i++)
     {
       float phong=scene.lights[i].direction.dot(n);

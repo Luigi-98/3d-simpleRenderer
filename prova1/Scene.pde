@@ -6,7 +6,6 @@ class Scene
   {
     int vertN=0, triangN=0;
     PVector[] vertexes;
-    PVector[] projected;
     Triangle[] triangles;
     Color col;
     Math.Matrix transformationMatrix;
@@ -14,7 +13,6 @@ class Scene
     Object(int triangleN)
     {
       vertexes=new PVector[triangleN*3];
-      projected=new PVector[triangleN*3];
       triangles=new Triangle[triangleN];
       transformationMatrix=new Math.Matrix(4,4);
       transformationMatrix.fill(0);
