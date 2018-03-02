@@ -445,7 +445,7 @@ class Renderer
   int[] render()
   {
     int[] result=new int[w*h];
-    project();
+    project(projection);
     
     compareBuff();
     
