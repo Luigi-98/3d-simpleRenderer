@@ -26,7 +26,6 @@ class Scene
       int Aid=-1,Bid=-1,Cid=-1;
       Color a=new Color(-1,-1,-1),b=a,c=a;
       PVector nA, nB, nC;
-      PVector barycAlpha, barycBeta;
       
       Triangle(PVector A0, PVector B0, PVector C0)
       {
@@ -67,17 +66,6 @@ class Scene
       }
       
       Triangle(int A, int B, int C) {Aid=A; Bid=B; Cid=C;nA=nB=nC=PVector.sub(vertexes[C], vertexes[A]).cross(PVector.sub(vertexes[B],vertexes[A])).normalize();}
-      
-      void initializeBarycentric()
-      {
-        PVector A=projected[Aid], B=projected[Bid], C=projected[Cid];
-        float den=1/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y));
-        barycAlpha=new PVector((B.y*C.z-B.z*C.y),(B.z*C.x-B.x*C.z),(B.x*C.y-B.y*C.x));
-        barycAlpha.mult(den);
-        barycBeta=new PVector((-A.y*C.z+A.z*C.y),(-A.z*C.x+A.x*C.z),(-A.x*C.y+A.y*C.x));
-        barycBeta.mult(den);
-        return;
-      }
     }
     
     int newTriangle(PVector A, PVector B, PVector C)

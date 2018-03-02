@@ -123,7 +123,6 @@ class Renderer
     Scene.Object obj=scene.objects[zbuffer[x][y].objId];
     Scene.Object.Triangle tng=obj.triangles[zbuffer[x][y].tngId];
     Color col0=zbuffer[x][y].col;
-    tng.initializeBarycentric();
     /**
       Bisogna interpolare considerando che nA, nB ed nC sono i valori della funzione
         in (x,y,zbuffer[x][y].dist).
@@ -133,9 +132,12 @@ class Renderer
        No, non esattamente: le coordinate proiettate non conservano proporzioni né aree, ma noi approssimiamo.
     **/
     
-    float   alpha=tng.barycAlpha.dot(new PVector((float)x,(float)y,(float)zbuffer[x][y].dist)),
-            beta=tng.barycBeta.dot(new PVector((float)x,(float)y,(float)zbuffer[x][y].dist));
+    PVector A=obj.projected[tng.Aid], B=obj.projected[tng.Bid], C=obj.projected[tng.Cid];
+    float den=1/(A.x*(B.y*C.z-B.z*C.y)-B.x*(A.y*C.z-A.z*C.y)+C.x*(A.y*B.z-A.z*B.y));
+    float   alpha=(float)(den*((B.y*C.z-B.z*C.y)*x+(B.z*C.x-B.x*C.z)*y+(B.x*C.y-B.y*C.x)*zbuffer[x][y].dist)),
+            beta=(float)(den*((-A.y*C.z+A.z*C.y)*x+(-A.z*C.x+A.x*C.z)*y+(-A.x*C.y+A.y*C.x)*zbuffer[x][y].dist));
     PVector n=PVector.add(PVector.mult(tng.nA,alpha),PVector.mult(tng.nB,beta)).add(PVector.mult(tng.nC,1-alpha-beta)); // devi interpolare linearmente zbuffer[x][y].nA, .nB, .nC in x,y rispetto le coordinate proiettate
+    n=obj.transformationMatrix.applyTo(n).normalize();
     for (int i=0; i<scene.nLights; i++)
     {
       float phong=scene.lights[i].direction.dot(n);

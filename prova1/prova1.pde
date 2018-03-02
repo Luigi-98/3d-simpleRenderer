@@ -14,7 +14,7 @@ void setup()
   fill(255);
   
   time=millis();
-  scene=new Scene(4,1);
+  scene=new Scene(5,1);
  /* Scene.Object cosa = scene.new Object(4);
   cosa.newTriangle(new PVector(0,0,-1), new PVector(1,0,-2), new PVector(1,1,-1), new Color(255,0,0));
   cosa.newTriangle(new PVector(0,0,-1), new PVector(0,1,-2), new PVector(1,1,-1), new Color(0,0,255));
@@ -28,7 +28,6 @@ void setup()
   triangle.newTriangle(new PVector(0.2,-0.2,-1.3), new PVector(-0.3,-0.2,-1.3), new PVector(0.2,-0.2,-1.8), color(255,0,0));
   scene.addObject(triangle);*/
   //for (int i=0; i<scene.objects[0].vertN; i++) println(scene.objects[0].vertexes[i]);
-  //scene.addSphere(new PVector(0,0,-1.5),0.5,20,20, new Color(255,0,0));
   try  {
     scene.addObject(VertlistReader.readFile(scene,"/home/luigi/Downloads/bunny/reconstruction/bun_zipper.vl"));//Development/Processing/3d-simpleRenderer/vertListTest.vl"));
   }
@@ -46,9 +45,10 @@ void setup()
   scene.objects[1].col=new Color(0,0,255);
   scene.objects[1].scale(5,5,5);
   scene.objects[1].move(0,-1,-1.7);
-  scene.addParallelepiped(new PVector(0.2,0,-1), new PVector(0,0.1,0), new PVector(0.1,0,0), new PVector(0,0,-0.01), new Color(0,0,255));
-  scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.7), new Color(255,255,255)));
-  scene.addSphere(new PVector(0,-1,-1),0.2,20,20, new Color(255,0,0));
+  //scene.addParallelepiped(new PVector(0.2,0,-1), new PVector(0,0.1,0), new PVector(0.1,0,0), new PVector(0,0,-0.01), new Color(0,0,255));
+  scene.addLight(scene.new Light(2,2,1,new PVector(-0.3,-0.5,-0.2), new Color(255,255,255)));
+  //scene.addSphere(new PVector(0,-1,-1),0.2,20,20, new Color(255,0,0));
+  //scene.addSphere(new PVector(0,0,-1.5),0.5,10,10, new Color(255,0,0));
   println("Scene setup took ",millis()-time," milliseconds.");
   
   time=millis();
