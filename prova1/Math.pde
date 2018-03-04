@@ -67,6 +67,18 @@ static class Math
       res.a[0][0]=res.a[1][1]=res.a[2][2]=res.a[3][3]=1;
       return res;
     }
+    
+    void set(Matrix m)
+    {
+      for (int i=0; i<w; i++) for (int j=0; j<h; j++) a[i][j]=m.a[i][j];
+    }
+    
+    String toString()
+    {
+      StringBuilder res=new StringBuilder();
+      for (int i=0; i<w; i++) {for (int j=0; j<h; j++) res.append(Double.toString(a[i][j])+"\t"); res.append("\n");}
+      return res.toString();
+    }
   }
   
   static PVector min(PVector A, PVector B, PVector C)

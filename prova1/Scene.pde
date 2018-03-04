@@ -160,6 +160,15 @@ class Scene
       }
       return;
     }
+    
+    Object copy()
+    {
+      Object res = new Object(triangN);
+      res.vertN=vertN; res.col=col; res.transformationMatrix.set(transformationMatrix);
+      for (int i=0; i<vertN; i++) res.vertexes[i]=vertexes[i];
+      for (int i=0; i<triangN; i++) res.triangles[i]=triangles[i];
+      return res;
+    }
   }
   
   class Light
